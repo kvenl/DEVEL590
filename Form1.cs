@@ -19,12 +19,11 @@ namespace The590Box
     public partial class MainForm : Form
     {
         public readonly SerialPort Serial_Port;
-        public string temp, mode, Rfsql, Dspmod, Dspspan, RfsqlD,
-            DspmodD, DspspanD, FColorB, Ptemp, Pstr, Mode, ModeD, Dspant, DspantD, Dspipo, DspipoD, DspRx, DspRxD, SButton, DScopspan, Bar = "";
-        public decimal TempD, tempnum, Rfsqlnum, Dsppodnum, SecondNum;
+        public string mode,  
+             FColorB, Pstr, Mode, ModeD,Dspipo, DspipoD, SButton, DScopspan, Bar = "";
+        public decimal  Dsppodnum, SecondNum;
 
         private CancellationTokenSource cts = new();
-        private bool rfSqlOn = false; // false for RF, true for Squelch
 
         public MainForm()
         {
@@ -104,83 +103,7 @@ namespace The590Box
                     Serial_Port.DiscardInBuffer();
                     Serial_Port.DiscardOutBuffer();
 
-                    IssueCmd("RM9;");
-                    temp = Serial_Port.ReadTo(";");
-                    if (temp.Length >= 6)
-                    {
-                        Ptemp = temp.Substring(3, 3);
-                        tempnum = Convert.ToDecimal(Ptemp);
-                        TempD = Decimal.Floor((tempnum / 2.3M) - 6);
-                    }
-                    else
-                    {
-                        TempD = 0;
-                    }
 
-                    if (TempD > 40)
-                    {
-                        FColorB = "Red";
-                        Console.Beep(3000, 1000);
-                    }
-                    else if (TempD > 33)
-                    {
-                        FColorB = "Orange";
-                    }
-                    else
-                    {
-                        FColorB = "Cyan";
-                    }
-
-                    IssueCmd("EX030107;");
-                    temp = Serial_Port.ReadTo(";");
-                    if (temp.Length >= 9)
-                    {
-                        Rfsql = temp.Substring(8, 1);
-                        RfsqlD = Rfsql == "0" ? "RF" : "Squelch";
-                    }
-                    else
-                    {
-                        RfsqlD = "RF";
-                    }
-
-
-                    IssueCmd("SS06;");
-                    temp = Serial_Port.ReadTo(";");
-                    if (temp.Length >= 5)
-                    {
-                        Dspmod = temp.Substring(4, 1);
-                        DspmodD = Dspmod switch
-                        {
-                            "8" => "CURSOR",
-                            "5" => "CENTER",
-                            _ => "FIX"
-                        };
-                    }
-                    else
-                    {
-                        DspmodD = "FIX";
-                    }
-
-                    IssueCmd("SS05;");
-                    temp = Serial_Port.ReadTo(";");
-                    if (temp.Length >= 5)
-                    {
-                        Dspspan = temp.Substring(4, 1);
-                        DspspanD = Dspspan switch
-                        {
-                            "9" => "1 M",
-                            "4" => "20k",
-                            "5" => "50k", 
-                            "6" => "100k",
-                            "7" => "200k",
-                            "8" => "500k",
-                            _ => "*OTHER*"
-                        };
-                    }
-                    else
-                    {
-                        DspspanD = "*OTHER*";
-                    }
 
                     IssueCmd("MD0;");
                     temp = Serial_Port.ReadTo(";");
@@ -239,30 +162,14 @@ namespace The590Box
                         DspipoD = "???";
                     }
 
-                    IssueCmd("FR;");
-                    temp = Serial_Port.ReadTo(";");
-                    DspRx = temp;
-                    DspRxD = DspRx switch
-                    {
-                        "FR01" => "RX 1",
-                        "FR10" => "RX 2",
-                        "FR00" => "RX 1 + 2",
-                        "FR11" => "RXs off",
-                        _ => "???"
-                    };
 
                     string Blokje = "█";
                     Bar = (Bar == Blokje) ? " " : Blokje;
 
                     // Update UI
-                    UpdateTextBox(TEMP_box, $"{TempD:00}°C", Color.FromName(FColorB));
-                    UpdateTextBox(RFSQL_box, RfsqlD);
-                    UpdateTextBox(DSPMOD_box, DspmodD);
-                    UpdateTextBox(DSPSPAN_box, DspspanD);
                     UpdateTextBox(MODE_box, ModeD);
                     UpdateTextBox(ANT_box, DspantD);
                     UpdateTextBox(IPO_box, DspipoD);
-                    UpdateTextBox(RX_box, DspRxD);
                     UpdateTextBox(BUSY_box, Bar);
 
 
@@ -391,10 +298,6 @@ namespace The590Box
             }
         }
 
-        private void Button1_Click(object sender, EventArgs e)
-        {
-            UpdateTextBox(TEMP_box, " ");
-        }
 
         private void UpdateTextBox(TextBox tb, string text, Color? foreColor = null)
         {
@@ -418,20 +321,6 @@ namespace The590Box
             Thread.Sleep(6); // Increased to 60 ms to match other working programs' timing
         }
 
-        private void RFB_click(object sender, MouseEventArgs e)
-        {
-            rfSqlOn = !rfSqlOn;
-            if (rfSqlOn)
-            {
-                IssueCmd("EX0301071;"); // Squelch
-                RFSQL_box.Text = "Squelch";
-            }
-            else
-            {
-                IssueCmd("EX0301070;"); // RF
-                RFSQL_box.Text = "RF";
-            }
-        }
         private void TuneButton_MouseDown(object sender, MouseEventArgs e)
         {
             IssueCmd("MD0;");
@@ -451,17 +340,6 @@ namespace The590Box
             cmd = "PC" + Pstr + ";";
             IssueCmd(cmd);
         }
-        private void Center_Click(object sender, MouseEventArgs e) { IssueCmd("SS0650000;"); }
-        private void Cursor_Click(object sender, MouseEventArgs e)
-        {
-            IssueCmd("SS0650000;");
-            IssueCmd("SS0680000;");
-        }
-        private void Fix_Click(object sender, MouseEventArgs e)
-        {
-            IssueCmd("SS0650000;");
-            IssueCmd("SS06B0000;");
-        }
         private void USB_click(object sender, MouseEventArgs e) { IssueCmd("MD02;"); }
         private void LSB_click(object sender, MouseEventArgs e) { IssueCmd("MD01;"); }
         private void CW_click(object sender, MouseEventArgs e) { IssueCmd("MD03;"); }
@@ -477,25 +355,9 @@ namespace The590Box
         private void IPOB_click(object sender, MouseEventArgs e) { IssueCmd("PA00;"); }
         private void AMP1B_click(object sender, MouseEventArgs e) { IssueCmd("PA01;"); }
         private void AMP2B_click(object sender, MouseEventArgs e) { IssueCmd("PA02;"); }
-        private void RX1B_click(object sender, MouseEventArgs e) { IssueCmd("FR01;"); }
-        private void RX2B_click(object sender, MouseEventArgs e) { IssueCmd("FR10;"); }
-        private void RX12B_click(object sender, MouseEventArgs e) { IssueCmd("FR00;"); }
-        private void RX12B_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Right) IssueCmd("FR11;");
-        }
-        private void RX12off_click(object sender, MouseEventArgs e) { IssueCmd("FR11;"); }
-        private void SSB1_click(object sender, EventArgs e) { IssueCmd("SS0560000;"); }
-        private void SSB2_click(object sender, EventArgs e) { IssueCmd("SS0570000;"); }
-        private void SSB3_click(object sender, EventArgs e) { IssueCmd("SS0580000;"); }
-        private void SSB4_click(object sender, EventArgs e) { IssueCmd("SS0590000;"); }
-        private void SSB5_click(object sender, EventArgs e) { IssueCmd("SS0540000;"); }
-        private void SSB6_click(object sender, EventArgs e) { IssueCmd("SS0550000;"); }
 
 
         private void textBox1_TextChanged_1(object sender, EventArgs e) { }
-        private void RX_box_TextChanged(object sender, EventArgs e) { }
-        private void FixB_Click(object sender, EventArgs e) { }
 
         // --- External Tuner color change handlers ---
         private void TuneButton_MouseEnter(object sender, EventArgs e) { ExtTuneButton.BackColor = Color.Blue; }
@@ -520,20 +382,6 @@ namespace The590Box
             }
         }
 
-        private void RFB_click_1(object sender, MouseEventArgs e)
-        {
-            rfSqlOn = !rfSqlOn;
-            if (rfSqlOn)
-            {
-                IssueCmd("EX0301071;"); // Squelch
-                RFSQL_box.Text = "Squelch";
-            }
-            else
-            {
-                IssueCmd("EX0301070;"); // RF
-                RFSQL_box.Text = "RF";
-            }
-        }
 
         private void RfGainTrackBar_ValueChanged(object sender, EventArgs e)
         {
@@ -593,11 +441,6 @@ namespace The590Box
         {
             IssueCmd("AC000;"); // Turn internal tuner OFF
         }
-        private void SWAP_Click(object sender, EventArgs e)
-        {
-            IssueCmd("SV;");
-        }
-
         private string SelectSerialPort()
         {
             try
