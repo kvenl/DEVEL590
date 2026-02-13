@@ -5,7 +5,7 @@
     <TargetFramework>net8.0-windows10.0.26100.0</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>Vintage Radio.ico</ApplicationIcon>
-    <StartupObject>The101Box.Program</StartupObject>
+    <StartupObject>The590Box.Program</StartupObject>
     <IsPublishable>True</IsPublishable>
   </PropertyGroup>
 
