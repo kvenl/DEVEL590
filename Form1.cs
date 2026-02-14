@@ -37,6 +37,9 @@ namespace The590Box
         {
             InitializeComponent();
 
+            // Restore position before showing the form
+            RestoreWindowPosition();
+
             // Wire up the FormClosing event handler
             this.FormClosing += MainForm_FormClosing;
 
@@ -328,6 +331,7 @@ namespace The590Box
                                 tunerDisplay = "R<AT> ";
                             }
                             
+
                             // If y = 1, set last character to "T"
                             if (y == "1")
                             {
@@ -393,28 +397,11 @@ namespace The590Box
 
         private void TuneButton_MouseDown(object sender, MouseEventArgs e)
         {
-            IssueCmd("MD0;");
-            mode = Serial_Port.ReadTo(";");
-
-            // Mute audio on tune
-            IssueCmd("AG0000;");
-            ExtTuneButton.BackColor = Color.Red;
-            isMuted = true;
-
-            IssueCmd("PC;");
-            string resp = Serial_Port.ReadTo(";");
-            Pstr = resp[2..];
-            IssueCmd("PC010;");
-            IssueCmd("MD05;");
-            IssueCmd("MX1;");
+            IssueCmd("TX2;");
         }
         private void TuneButton_MouseUp(object sender, MouseEventArgs e)
         {
-            IssueCmd("MX0;");
-            string cmd = mode + ";";
-            IssueCmd(cmd);
-            cmd = "PC" + Pstr + ";";
-            IssueCmd(cmd);
+            IssueCmd("RX;");
         }
         private void USB_click(object sender, MouseEventArgs e) { IssueCmd("MD2;"); }
         private void LSB_click(object sender, MouseEventArgs e) { IssueCmd("MD1;"); }
@@ -525,7 +512,7 @@ namespace The590Box
                 
                 if (ports.Length == 0)
                 {
-                    MessageBox.Show("No serial ports (COM0-COM20) found!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("No serial ports (COM0-COM20) found!", "The590Box - Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return "COM4";
                 }
                 
@@ -534,14 +521,14 @@ namespace The590Box
                     string selectedPort = ports[0];
                     Settings.Default.SerialPort = selectedPort;
                     Settings.Default.Save();
-                    MessageBox.Show($"Using port: {selectedPort}", "Serial Port", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"Using port: {selectedPort}", "The590Box - Serial Port", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return selectedPort;
                 }
                 
                 // Multiple ports - ALWAYS show selection dialog
                 using (var form = new Form())
                 {
-                    form.Text = "Select Serial Port";
+                    form.Text = "The590Box - Select Serial Port";  // Changed this line
                     form.Width = 250;
                     form.Height = 150;
                     form.StartPosition = FormStartPosition.CenterScreen;
@@ -606,13 +593,14 @@ namespace The590Box
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error: {ex.Message}", "The590Box - Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return "COM4";
             }
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            SaveWindowPosition();  // Save position before closing
             cts.Cancel();
             if (Serial_Port?.IsOpen == true)
                 Serial_Port.Close();
@@ -715,6 +703,41 @@ namespace The590Box
                 IssueCmd("AG0000;");
                 MUTE.BackColor = Color.Red;  // Changed from ExtTuneButton to MUTE
                 isMuted = true;
+            }
+        }
+
+        // Add this method to save window position
+        private void SaveWindowPosition()
+        {
+            Settings.Default.WindowLeft = this.Left;
+            Settings.Default.WindowTop = this.Top;
+            Settings.Default.Save();
+        }
+
+        // Add this method to restore window position
+        private void RestoreWindowPosition()
+        {
+            if (Settings.Default.WindowLeft >= 0 && Settings.Default.WindowTop >= 0)
+            {
+                // Validate that the saved position is still on a visible screen
+                Point savedLocation = new Point(Settings.Default.WindowLeft, Settings.Default.WindowTop);
+                
+                // Check if the saved position is on any of the current screens
+                bool isVisibleOnAnyScreen = false;
+                foreach (Screen screen in Screen.AllScreens)
+                {
+                    if (screen.WorkingArea.Contains(savedLocation))
+                    {
+                        isVisibleOnAnyScreen = true;
+                        break;
+                    }
+                }
+
+                if (isVisibleOnAnyScreen)
+                {
+                    this.StartPosition = FormStartPosition.Manual;
+                    this.Location = savedLocation;
+                }
             }
         }
     }
