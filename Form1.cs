@@ -11,7 +11,7 @@ using The590Box.Properties;
 
 // Code : Kees van Engelen (keesvanengelen@gmail.com)
 // 
-// Version : 1 (13 feb 26); 
+// Version : 2 (14 feb 26); 
 // Name    : The590Box Yaesu FTDX101 @ COMx
 
 
@@ -55,7 +55,7 @@ namespace The590Box
             string portName = SelectSerialPort();
             
             // Update form title with selected COM port
-            this.Text = $"The590Box v 1 - by Kees, ON9KVE - {portName}";
+            this.Text = $"The590Box v 2 - by Kees, ON9KVE - {portName}";
 
             Serial_Port = new SerialPort(portName, 115200, Parity.None, 8, StopBits.One)
             {
@@ -211,14 +211,19 @@ namespace The590Box
                     // Read and set RF gain slider (RGxxx;)
                     IssueCmd("RG;");
                     temp = Serial_Port.ReadTo(";");
-                    if (temp.Length >= 6)
+                    if (temp.Length >= 5 && temp.StartsWith("RG"))  // Changed from >= 6 to >= 5
                     {
-                        string rgValueStr = temp.Substring(3, 3);
+                        string rgValueStr = temp.Substring(2, 3);  // Changed from Substring(3, 3) to Substring(2, 3)
                         if (int.TryParse(rgValueStr, out int rgValue))
                         {
-                            int sliderValue = rfGainTrackBar.Maximum - rgValue;  // Invert: 0→255, 255→0
+                            // Clamp to valid range
+                            rgValue = Math.Max(0, Math.Min(255, rgValue));
+                            
+                            // Invert: radio 0 → slider 255 (top), radio 255 → slider 0 (bottom)
+                            int sliderValue = 255 - rgValue;
+                            
                             rfGainTrackBar.Value = Math.Max(rfGainTrackBar.Minimum, Math.Min(rfGainTrackBar.Maximum, sliderValue));
-                            UpdateTextBox(textBox1, sliderValue.ToString("D3"));  // Display inverted value
+                            UpdateTextBox(textBox1, sliderValue.ToString("D3"));  // Display inverted value (255-0)
                         }
                     }
 
