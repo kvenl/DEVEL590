@@ -11,7 +11,7 @@ using The590Box.Properties;
 
 // Code : Kees van Engelen (keesvanengelen@gmail.com)
 // 
-// Version : 2 (14 feb 26); 
+// Version : 3 (15 feb 26); 
 // Name    : The590Box Yaesu FTDX101 @ COMx
 
 
@@ -37,6 +37,10 @@ namespace The590Box
         {
             InitializeComponent();
 
+            // Make form fixed size (non-resizable)
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+
             // Restore position before showing the form
             RestoreWindowPosition();
 
@@ -61,7 +65,7 @@ namespace The590Box
             string portName = SelectSerialPort();
             
             // Update form title with selected COM port
-            this.Text = $"The590Box v 2 - by Kees, ON9KVE - {portName}";
+            this.Text = $"The590Box v 3 - by Kees, ON9KVE - {portName}";
 
             Serial_Port = new SerialPort(portName, 115200, Parity.None, 8, StopBits.One)
             {
@@ -325,6 +329,7 @@ namespace The590Box
                         {
                             tunerDisplay = " <AT> ";
                             
+
                             // If x = 1, set first character to "R"
                             if (x == "1")
                             {
@@ -709,35 +714,40 @@ namespace The590Box
         // Add this method to save window position
         private void SaveWindowPosition()
         {
+            // Only save position, not size (since form is now fixed-size)
             Settings.Default.WindowLeft = this.Left;
             Settings.Default.WindowTop = this.Top;
+            Settings.Default.IsPositionSaved = true; // Mark that we have saved a position
             Settings.Default.Save();
         }
 
         // Add this method to restore window position
         private void RestoreWindowPosition()
         {
-            if (Settings.Default.WindowLeft >= 0 && Settings.Default.WindowTop >= 0)
+            // Check if a position has ever been saved. This is more reliable than checking coordinates.
+            if (!Settings.Default.IsPositionSaved)
             {
-                // Validate that the saved position is still on a visible screen
-                Point savedLocation = new Point(Settings.Default.WindowLeft, Settings.Default.WindowTop);
-                
-                // Check if the saved position is on any of the current screens
-                bool isVisibleOnAnyScreen = false;
-                foreach (Screen screen in Screen.AllScreens)
-                {
-                    if (screen.WorkingArea.Contains(savedLocation))
-                    {
-                        isVisibleOnAnyScreen = true;
-                        break;
-                    }
-                }
+                // If not, this is the first run, so center the form.
+                this.StartPosition = FormStartPosition.CenterScreen;
+                return;
+            }
 
-                if (isVisibleOnAnyScreen)
-                {
-                    this.StartPosition = FormStartPosition.Manual;
-                    this.Location = savedLocation;
-                }
+            // Create a rectangle with the saved position and current (fixed) size
+            var savedBounds = new Rectangle(Settings.Default.WindowLeft, Settings.Default.WindowTop, this.Width, this.Height);
+
+            // Check if the saved position is visible on any of the connected screens
+            bool isVisible = Screen.AllScreens.Any(screen => screen.WorkingArea.IntersectsWith(savedBounds));
+
+            if (isVisible)
+            {
+                // If it's visible, move the form to the saved location
+                this.StartPosition = FormStartPosition.Manual;
+                this.Location = new Point(Settings.Default.WindowLeft, Settings.Default.WindowTop);
+            }
+            else
+            {
+                // If not (e.g., the monitor was disconnected), center the form to prevent it from opening off-screen
+                this.StartPosition = FormStartPosition.CenterScreen;
             }
         }
     }

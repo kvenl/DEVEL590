@@ -58,5 +58,17 @@ namespace The590Box.Properties {
                 this["WindowTop"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsPositionSaved {
+            get {
+                return ((bool)(this["IsPositionSaved"]));
+            }
+            set {
+                this["IsPositionSaved"] = value;
+            }
+        }
     }
 }
