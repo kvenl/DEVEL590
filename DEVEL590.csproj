@@ -7,6 +7,11 @@
     <ApplicationIcon>Vintage Radio.ico</ApplicationIcon>
     <StartupObject>The590Box.Program</StartupObject>
     <IsPublishable>True</IsPublishable>
+
+  <AssemblyName>YourNewProject</AssemblyName>
+  <RootNamespace>YourNewProject</RootNamespace>
+
+
   </PropertyGroup>
 
   <ItemGroup>
