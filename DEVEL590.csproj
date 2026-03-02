@@ -8,8 +8,8 @@
     <StartupObject>The590Box.Program</StartupObject>
     <IsPublishable>True</IsPublishable>
 
-  <AssemblyName>YourNewProject</AssemblyName>
-  <RootNamespace>YourNewProject</RootNamespace>
+  <AssemblyName>The590Box</AssemblyName>
+  <RootNamespace>DEVEL590</RootNamespace>
 
 
   </PropertyGroup>
