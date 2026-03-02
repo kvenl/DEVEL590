@@ -87,8 +87,6 @@ namespace The590Box
             ExtTuneButton.TabIndex = 8;
             ExtTuneButton.Text = "Ext Tuner";
             ExtTuneButton.UseVisualStyleBackColor = false;
-            ExtTuneButton.MouseDown += TuneButton_MouseDown;
-            ExtTuneButton.MouseUp += TuneButton_MouseUp;
             // 
             // USBB
             // 
@@ -104,7 +102,6 @@ namespace The590Box
             USBB.TabIndex = 11;
             USBB.Text = "USB";
             USBB.UseVisualStyleBackColor = false;
-            USBB.MouseClick += USB_click;
             // 
             // LSBB
             // 
@@ -120,7 +117,6 @@ namespace The590Box
             LSBB.TabIndex = 12;
             LSBB.Text = "LSB";
             LSBB.UseVisualStyleBackColor = false;
-            LSBB.MouseClick += LSB_click;
             // 
             // CWB
             // 
@@ -136,7 +132,6 @@ namespace The590Box
             CWB.TabIndex = 13;
             CWB.Text = "CW";
             CWB.UseVisualStyleBackColor = false;
-            CWB.MouseClick += CW_click;
             // 
             // MODE_box
             // 
@@ -167,7 +162,6 @@ namespace The590Box
             ANT1B.TabIndex = 25;
             ANT1B.Text = "ANT 1";
             ANT1B.UseVisualStyleBackColor = false;
-            ANT1B.MouseClick += ANT1B_click;
             // 
             // ANT2B
             // 
@@ -183,7 +177,6 @@ namespace The590Box
             ANT2B.TabIndex = 26;
             ANT2B.Text = "ANT 2";
             ANT2B.UseVisualStyleBackColor = false;
-            ANT2B.MouseClick += ANT2B_click;
             // 
             // ANT3RXB
             // 
@@ -199,7 +192,6 @@ namespace The590Box
             ANT3RXB.TabIndex = 27;
             ANT3RXB.Text = "RX ANT";
             ANT3RXB.UseVisualStyleBackColor = false;
-            ANT3RXB.MouseClick += ANT3RXB_click;
             // 
             // PREoff
             // 
@@ -215,7 +207,6 @@ namespace The590Box
             PREoff.TabIndex = 28;
             PREoff.Text = "PRE off";
             PREoff.UseVisualStyleBackColor = false;
-            PREoff.MouseClick += PREoff_click;
             // 
             // PROon
             // 
@@ -231,7 +222,6 @@ namespace The590Box
             PROon.TabIndex = 29;
             PROon.Text = "PRE on";
             PROon.UseVisualStyleBackColor = false;
-            PROon.MouseClick += PROon_click;
             // 
             // ANT_box
             // 
@@ -275,7 +265,6 @@ namespace The590Box
             rfGainTrackBar.TickFrequency = 16;
             rfGainTrackBar.TickStyle = System.Windows.Forms.TickStyle.Both;
             rfGainTrackBar.Value = 255;
-            rfGainTrackBar.ValueChanged += RfGainTrackBar_ValueChanged;
             // 
             // volumeGainTrackBar
             // 
@@ -323,7 +312,6 @@ namespace The590Box
             textBox2.Text = "00";
             textBox2.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             textBox2.WordWrap = false;
-            textBox2.TextChanged += textBox2_TextChanged;
             // 
             // BUSY_box
             // 
@@ -353,7 +341,6 @@ namespace The590Box
             pwrControlTrackBar.TickFrequency = 5;
             pwrControlTrackBar.TickStyle = System.Windows.Forms.TickStyle.Both;
             pwrControlTrackBar.Value = 100;
-            pwrControlTrackBar.ValueChanged += PwrControlTrackBar_ValueChanged;
             // 
             // textBox3
             // 
@@ -386,7 +373,6 @@ namespace The590Box
             AMB.TabIndex = 49;
             AMB.Text = "AM";
             AMB.UseVisualStyleBackColor = false;
-            AMB.MouseClick += AM_click;
             // 
             // FMB
             // 
@@ -402,7 +388,6 @@ namespace The590Box
             FMB.TabIndex = 50;
             FMB.Text = "FM";
             FMB.UseVisualStyleBackColor = false;
-            FMB.MouseClick += FM_click;
             // 
             // DIGB
             // 
@@ -418,7 +403,6 @@ namespace The590Box
             DIGB.TabIndex = 51;
             DIGB.Text = "DATA";
             DIGB.UseVisualStyleBackColor = false;
-            DIGB.MouseClick += DIGB_click;
             // 
             // IntTune
             // 
@@ -434,7 +418,6 @@ namespace The590Box
             IntTune.TabIndex = 55;
             IntTune.Text = "Int Tuner";
             IntTune.UseVisualStyleBackColor = false;
-            IntTune.Click += IntTune_Click;
             // 
             // ItuneOn
             // 
@@ -450,7 +433,6 @@ namespace The590Box
             ItuneOn.TabIndex = 56;
             ItuneOn.Text = "On";
             ItuneOn.UseVisualStyleBackColor = false;
-            ItuneOn.Click += ItuneOn_Click;
             // 
             // ItuneOff
             // 
@@ -466,7 +448,6 @@ namespace The590Box
             ItuneOff.TabIndex = 57;
             ItuneOff.Text = "Off";
             ItuneOff.UseVisualStyleBackColor = false;
-            ItuneOff.Click += ItuneOff_Click;
             // 
             // textBox4
             // 
@@ -563,7 +544,6 @@ namespace The590Box
             MENU.TabIndex = 59;
             MENU.Text = "MENU A";
             MENU.UseVisualStyleBackColor = false;
-            MENU.MouseClick += MENU_click;
             // 
             // SQLtrackBar
             // 

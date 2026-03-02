@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace The590Box.Properties {
+namespace DEVEL590.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -26,12 +26,12 @@ namespace The590Box.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string SerialPort {
+        public string LastPort {
             get {
-                return ((string)(this["SerialPort"]));
+                return ((string)(this["LastPort"]));
             }
             set {
-                this["SerialPort"] = value;
+                this["LastPort"] = value;
             }
         }
         
