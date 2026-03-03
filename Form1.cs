@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 // Code : Kees van Engelen (keesvanengelen@gmail.com)
 // 
-// Version : 7b (03 mrt 26); 
+// Version : 7c (03 mrt 26); 
 // Name    : The590Box 
 
 
@@ -56,6 +56,9 @@ namespace The590Box
         private const string CMD_SET_DATA_ON    = "DA1;";
         private const string CMD_SET_VOL_MUTE   = "AG0000;";
         private const string CMD_SET_BAND       = "BD";   // append 2-digit band 00-10 + ;
+        private const string CMD_READ_VFO_SEL      = "FR;";
+        private const string CMD_SET_VFO_A         = "FR0;";
+        private const string CMD_SET_VFO_B         = "FR1;";
         #endregion
 
         public SerialPort? Serial_Port;
@@ -83,6 +86,7 @@ namespace The590Box
             CMD_READ_VFO1,
             CMD_READ_VFO2,
             CMD_READ_TUNER,
+            CMD_READ_VFO_SEL,
         };
 
         // Slider debounce
@@ -100,6 +104,7 @@ namespace The590Box
         private bool rxAntennaOn = false;
         private bool dataOn = false; // Tracks the current DATA state
         private bool menuA = true; // Tracks the current MENU state
+        private bool vfoB = false;   // false = VFO-A active, true = VFO-B active
         private long currentVfoAHz = 0; // Current VFO-A frequency in 10 Hz units
         private static readonly long[] StepValues = { 10, 50, 100, 500, 900 }; // 100 Hz, 500 Hz, 1 kHz, 5 kHz, 9 kHz
                                    //      private bool isRxAntennaOff = false;
@@ -192,6 +197,9 @@ namespace The590Box
             // PLUSB / MINB
             PLUSB.Click += PLUSB_Click;
             MINB.Click  += MINB_Click;
+
+            // A/B VFO swap
+            ABB.Click += ABB_Click;
         }
 
         private void UpdateTextBox(TextBox tb, string text, Color? foreColor = null)
@@ -354,6 +362,20 @@ namespace The590Box
             bool tunerOn = x == "1" || y == "1";
             SetButtonGroup(new[] { ItuneOn, ItuneOff }, tunerOn ? ItuneOn : ItuneOff);
         }
+
+        private void ParseVfoSel(string r)
+        {
+            if (r.Length < 3) return;
+            vfoB = r[2] == '1';
+            if (ABB.InvokeRequired) ABB.BeginInvoke((Action)UpdateABBButton);
+            else UpdateABBButton();
+        }
+
+        private void UpdateABBButton()
+        {
+            ABB.Text      = vfoB ? "VFO-B" : "VFO-A";
+            ABB.BackColor = vfoB ? Color.DarkBlue : Color.DarkGreen;
+        }
         #endregion
 
         private void SetButtonActive(Button btn, bool active)
@@ -399,6 +421,7 @@ namespace The590Box
             else if (cmd == CMD_READ_VFO1) ParseVfoA(response);
             else if (cmd == CMD_READ_VFO2) ParseVfoB(response);
             else if (cmd == CMD_READ_TUNER) ParseTuner(response);
+            else if (cmd == CMD_READ_VFO_SEL) ParseVfoSel(response);
 
             string blok = "█";
             UpdateTextBox(BUSY_box, BUSY_box.Text == blok ? " " : blok);
@@ -470,6 +493,13 @@ namespace The590Box
 
         private void PLUSB_Click(object sender, EventArgs e) => StepVfoA(+1);
         private void MINB_Click(object sender, EventArgs e) => StepVfoA(-1);
+
+        private void ABB_Click(object sender, EventArgs e)
+        {
+            vfoB = !vfoB;
+            IssueCmd(vfoB ? CMD_SET_VFO_B : CMD_SET_VFO_A);
+            UpdateABBButton();
+        }
 
         private void StepVfoA(int direction)
         {
