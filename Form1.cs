@@ -11,8 +11,8 @@ using System.Windows.Forms;
 
 // Code : Kees van Engelen (keesvanengelen@gmail.com)
 // 
-// Version : 5 (02 mrt 26); 
-// Name    : The590Box Yaesu FTDX101 @ COMx
+// Version : 6 (03 mrt 26); 
+// Name    : The590Box 
 
 
 namespace The590Box
@@ -52,13 +52,19 @@ namespace The590Box
         private const string CMD_SET_TUNER_TUNE = "AC111;";
         private const string CMD_SET_MENU_A = "MF0;";
         private const string CMD_SET_MENU_B = "MF1;";
-        private const string CMD_SET_DATA_OFF = "DA0;";
-        private const string CMD_SET_DATA_ON = "DA1;";
-        private const string CMD_SET_VOL_MUTE = "AG0000;";
+        private const string CMD_SET_DATA_OFF   = "DA0;";
+        private const string CMD_SET_DATA_ON    = "DA1;";
+        private const string CMD_SET_VOL_MUTE   = "AG0000;";
+        private const string CMD_SET_BAND       = "BD";   // append 2-digit band 00-10 + ;
         #endregion
 
         public SerialPort? Serial_Port;
         private readonly object serialLock = new();
+
+        private int currentBand = 10; // default GENE
+        private static readonly string[] BandLabels =
+            { "1.8 MHz", "3.5 MHz", "7 MHz", "10 MHz", "14 MHz",
+              "18 MHz", "21 MHz", "24 MHz", "28 MHz", "50 MHz", "GENE" };
 
         // Poll timer
         private readonly System.Windows.Forms.Timer pollTimer = new();
@@ -171,7 +177,10 @@ namespace The590Box
             // COM port selector + connect button
             comPortComboBox.DrawItem += ComboBox_DrawItem;
             comPortComboBox.DropDown += (s, e) => PopulateComPorts();
-            connectButton.Click += ConnectButton_Click;
+            connectButton.Click      += ConnectButton_Click;
+
+            // Band button
+            BANDB.MouseClick += BandButton_MouseClick;
         }
 
         private void UpdateTextBox(TextBox tb, string text, Color? foreColor = null)
@@ -272,16 +281,58 @@ namespace The590Box
 
         private void ParseVfoA(string r)
         {
-            string d = (r.Length >= 3 && long.TryParse(r.Substring(2, r.Length - 3), out long hz))
-                ? $"{hz / 100000.0,9:F3}" : "???";
-            UpdateTextBox(VFOA_box, $"VFOA:{d} MHz");
+            if (!long.TryParse(r.Substring(2, r.Length - 3), out long hz)) return;
+            UpdateTextBox(VFOA_box, FormatFrequency(hz));
+            int band = GetBandFromHz(hz);
+            if (band != currentBand) { currentBand = band; UpdateBandButton(); }
         }
 
         private void ParseVfoB(string r)
         {
-            string d = (r.Length >= 3 && long.TryParse(r.Substring(2, r.Length - 3), out long hz))
-                ? $"{hz / 100000.0,9:F3}" : "???";
-            UpdateTextBox(VFOB_box, $"VFOB:{d} MHz");
+            if (r.Length >= 3 && long.TryParse(r.Substring(2, r.Length - 3), out long hz))
+                UpdateTextBox(VFOB_box, FormatFrequency(hz));
+        }
+
+        private static string FormatFrequency(long hz)
+        {
+            long mhz = hz / 100000;
+            long khz = (hz % 100000) / 100;
+            long hh  = hz % 100;
+            string b = mhz >= 10 ? (mhz / 10).ToString() : " ";
+            return $"{b}{mhz % 10}.{khz:D3}.{hh:D2}";
+        }
+
+        private static int GetBandFromHz(long hz)
+        {
+            // IARU Region 1 (Europe) band boundaries
+            if (hz >=  181000 && hz <=  190000) return 0;  // 1.8 MHz  (1.810 – 1.900)
+            if (hz >=  350000 && hz <=  380000) return 1;  // 3.5 MHz  (3.500 – 3.800)
+            if (hz >=  700000 && hz <=  720000) return 2;  // 7 MHz    (7.000 – 7.200)
+            if (hz >= 1010000 && hz <= 1015000) return 3;  // 10 MHz   (10.100 – 10.150)
+            if (hz >= 1400000 && hz <= 1435000) return 4;  // 14 MHz   (14.000 – 14.350)
+            if (hz >= 1806800 && hz <= 1816800) return 5;  // 18 MHz   (18.068 – 18.168)
+            if (hz >= 2100000 && hz <= 2145000) return 6;  // 21 MHz   (21.000 – 21.450)
+            if (hz >= 2489000 && hz <= 2499000) return 7;  // 24 MHz   (24.890 – 24.990)
+            if (hz >= 2800000 && hz <= 2970000) return 8;  // 28 MHz   (28.000 – 29.700)
+            if (hz >= 5000000 && hz <= 5200000) return 9;  // 50 MHz   (50.000 – 52.000)
+            return 10; // GENE
+        }
+
+        private void UpdateBandButton()
+        {
+            if (BANDB.InvokeRequired) { BANDB.BeginInvoke((Action)UpdateBandButton); return; }
+            BANDB.Text = BandLabels[currentBand];
+        }
+
+        private void BandButton_MouseClick(object sender, MouseEventArgs e)
+        {
+            int newBand;
+            if      (e.Button == MouseButtons.Left)  newBand = (currentBand + 1)  % 11;
+            else if (e.Button == MouseButtons.Right) newBand = (currentBand + 10) % 11;
+            else return;
+            currentBand = newBand;
+            IssueCmd($"{CMD_SET_BAND}{newBand:D2};");
+            UpdateBandButton();
         }
 
         private void ParseTuner(string r)

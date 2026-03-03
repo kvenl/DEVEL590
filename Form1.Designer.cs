@@ -58,6 +58,8 @@ namespace The590Box
             pwrControlLabel = new Label();
             VFOA_box = new TextBox();
             VFOB_box = new TextBox();
+            vfoALabel = new Label();
+            vfoBLabel = new Label();
             MENU = new Button();
             SQLtrackBar = new TrackBar();
             SQLTextBox = new TextBox();
@@ -449,10 +451,10 @@ namespace The590Box
             VFOA_box.BackColor = Color.DarkGreen;
             VFOA_box.Font = new Font("Consolas", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             VFOA_box.ForeColor = Color.Yellow;
-            VFOA_box.Location = new Point(2, 1);
+            VFOA_box.Location = new Point(36, 1);
             VFOA_box.Multiline = true;
             VFOA_box.Name = "VFOA_box";
-            VFOA_box.Size = new Size(188, 33);
+            VFOA_box.Size = new Size(154, 33);
             VFOA_box.TabIndex = 44;
             VFOA_box.TabStop = false;
             VFOA_box.Text = "VFOA";
@@ -464,15 +466,39 @@ namespace The590Box
             VFOB_box.BackColor = Color.DarkBlue;
             VFOB_box.Font = new Font("Consolas", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             VFOB_box.ForeColor = Color.Yellow;
-            VFOB_box.Location = new Point(2, 36);
+            VFOB_box.Location = new Point(36, 36);
             VFOB_box.Multiline = true;
             VFOB_box.Name = "VFOB_box";
-            VFOB_box.Size = new Size(188, 33);
+            VFOB_box.Size = new Size(154, 33);
             VFOB_box.TabIndex = 45;
             VFOB_box.TabStop = false;
             VFOB_box.Text = "VFOB";
             VFOB_box.TextAlign = HorizontalAlignment.Center;
             VFOB_box.WordWrap = false;
+            // 
+            // vfoALabel
+            // 
+            vfoALabel.BackColor = Color.DarkGreen;
+            vfoALabel.Font = new Font("Verdana", 6F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            vfoALabel.ForeColor = Color.Yellow;
+            vfoALabel.Location = new Point(2, 1);
+            vfoALabel.Name = "vfoALabel";
+            vfoALabel.Size = new Size(34, 33);
+            vfoALabel.TabIndex = 0;
+            vfoALabel.Text = "VFOA";
+            vfoALabel.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // vfoBLabel
+            // 
+            vfoBLabel.BackColor = Color.DarkBlue;
+            vfoBLabel.Font = new Font("Verdana", 6F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            vfoBLabel.ForeColor = Color.Yellow;
+            vfoBLabel.Location = new Point(2, 36);
+            vfoBLabel.Name = "vfoBLabel";
+            vfoBLabel.Size = new Size(34, 33);
+            vfoBLabel.TabIndex = 0;
+            vfoBLabel.Text = "VFOB";
+            vfoBLabel.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // MENU
             // 
@@ -676,6 +702,8 @@ namespace The590Box
             Controls.Add(BUSY_box);
             Controls.Add(textBox2);
             Controls.Add(textBox1);
+            Controls.Add(vfoBLabel);
+            Controls.Add(vfoALabel);
             Controls.Add(VFOB_box);
             Controls.Add(VFOA_box);
             Controls.Add(volumeGainTrackBar);
@@ -700,7 +728,7 @@ namespace The590Box
             MaximizeBox = false;
             MinimizeBox = false;
             Name = "MainForm";
-            Text = "The590Box v 5 - by Kees, ON9KVE";
+            Text = "The590Box v 6 - by Kees, ON9KVE";
             TransparencyKey = Color.Fuchsia;
             Load += MainForm_Load;
             ((System.ComponentModel.ISupportInitialize)rfGainTrackBar).EndInit();
@@ -740,6 +768,8 @@ namespace The590Box
         private System.Windows.Forms.Label pwrControlLabel;
         private System.Windows.Forms.TextBox VFOA_box;
         private System.Windows.Forms.TextBox VFOB_box;
+        private System.Windows.Forms.Label vfoALabel;
+        private System.Windows.Forms.Label vfoBLabel;
         private System.Windows.Forms.Button MENU;
         private System.Windows.Forms.TrackBar SQLtrackBar;
         private System.Windows.Forms.TextBox SQLTextBox;
