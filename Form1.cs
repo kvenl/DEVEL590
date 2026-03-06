@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 // Code : Kees van Engelen (keesvanengelen@gmail.com)
 // 
-// Version : 9b  (06 mrt 26); 
+// Version : 9  (06 mrt 26); 
 // Name    : The590Box 
 
 
@@ -19,7 +19,7 @@ namespace The590Box
 {
     public partial class MainForm : Form
     {
-        private const string AppTitle = "The590Box v 9beta - by Kees, ON9KVE";
+        private const string AppTitle = "The590Box v 9 - by Kees, ON9KVE";
 
         #region Radio Commands — Yaesu FTDX-101 CAT
         private const string CMD_READ_MODE = "MD;";
@@ -113,6 +113,7 @@ namespace The590Box
                                    //      private bool isRxAntennaOff = false;
         private bool muted = false;
         private int savedVolume = 0;
+        private bool internalTunerOn = false;
         public MainForm()
         {
             InitializeComponent();
@@ -373,10 +374,10 @@ namespace The590Box
 
         private void ParseTuner(string r)
         {
-            if (r.Length < 4) { SetButtonGroup(new[] { ItuneOn, ItuneOff }, ItuneOff); return; }
+            if (r.Length < 4) { internalTunerOn = false; SetButtonGroup(new[] { ItuneOn, ItuneOff }, ItuneOff); return; }
             string x = r.Substring(2, 1), y = r.Substring(3, 1);
-            bool tunerOn = x == "1" || y == "1";
-            SetButtonGroup(new[] { ItuneOn, ItuneOff }, tunerOn ? ItuneOn : ItuneOff);
+            internalTunerOn = x == "1" || y == "1";
+            SetButtonGroup(new[] { ItuneOn, ItuneOff }, internalTunerOn ? ItuneOn : ItuneOff);
         }
 
         private void ParseVfoSel(string r)
@@ -488,7 +489,25 @@ namespace The590Box
 
         private void TuneButton_MouseDown(object sender, MouseEventArgs e)
         {
+            if (internalTunerOn)
+            {
+                FlashExtTuneBlocked();
+                return;
+            }
             IssueCmd(CMD_SET_TX);
+        }
+
+        private async void FlashExtTuneBlocked()
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                ExtTuneButton.BackColor = Color.Red;
+                ExtTuneButton.Text = "Blocked";
+                await Task.Delay(200);
+                ExtTuneButton.BackColor = Color.DarkGreen;
+                ExtTuneButton.Text = "Ext Tuner";
+                await Task.Delay(150);
+            }
         }
         private void TuneButton_MouseUp(object sender, MouseEventArgs e)
         {
@@ -626,11 +645,13 @@ namespace The590Box
 
         private void ItuneOn_Click(object sender, EventArgs e)
         {
+            internalTunerOn = true;
             IssueCmd(CMD_SET_TUNER_ON); // Turn internal tuner ON
         }
 
         private void ItuneOff_Click(object sender, EventArgs e)
         {
+            internalTunerOn = false;
             IssueCmd(CMD_SET_TUNER_OFF); // Turn internal tuner OFF
         }
         private void PopulateComPorts()
