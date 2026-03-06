@@ -8,7 +8,7 @@ namespace The590Box
     {
         private static readonly string ConfigPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "DEVEL590",
+            "The590Box",
             "user.config");
 
         private static UserConfig? _default;

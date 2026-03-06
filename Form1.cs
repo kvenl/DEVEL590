@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 // Code : Kees van Engelen (keesvanengelen@gmail.com)
 // 
-// Version : 8 RC (03 mrt 26); 
+// Version : 9b  (06 mrt 26); 
 // Name    : The590Box 
 
 
@@ -19,6 +19,8 @@ namespace The590Box
 {
     public partial class MainForm : Form
     {
+        private const string AppTitle = "The590Box v 9beta - by Kees, ON9KVE";
+
         #region Radio Commands — Yaesu FTDX-101 CAT
         private const string CMD_READ_MODE = "MD;";
         private const string CMD_READ_ANT = "AN;";
@@ -114,6 +116,7 @@ namespace The590Box
         public MainForm()
         {
             InitializeComponent();
+            this.Text = $"{AppTitle} - Disconnected";
             InitializeTrackBarEvents();
 
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -663,7 +666,7 @@ namespace The590Box
                 try { Serial_Port.Close(); } catch { }
                 UpdateConnectButtonState(false);
                 ExtTuneButton.Enabled = false;
-                this.Text = "The590Box v 3 - by Kees, ON9KVE";
+                this.Text = $"{AppTitle} - Disconnected";
             }
             else
             {
@@ -691,7 +694,7 @@ namespace The590Box
                             {
                                 UserConfig.Default.LastPort = portName;
                                 UserConfig.Default.Save();
-                                this.Text = $"The590Box v 3 - by Kees, ON9KVE - {portName}";
+                                this.Text = $"{AppTitle} - {portName}";
                                 UpdateConnectButtonState(true);
                                 ExtTuneButton.Enabled = true;
                                 connectButton.Enabled = true;
