@@ -14,10 +14,12 @@ namespace The590Box
         private static UserConfig? _default;
         public static UserConfig Default => _default ??= Load();
 
-        public string LastPort       { get; set; } = "";
-        public int    WindowLeft     { get; set; } = -1;
-        public int    WindowTop      { get; set; } = -1;
+        public string LastPort        { get; set; } = "";
+        public int    WindowLeft      { get; set; } = -1;
+        public int    WindowTop       { get; set; } = -1;
         public bool   IsPositionSaved { get; set; } = false;
+        public int    StepIndexA      { get; set; } = 2;
+        public int    StepIndexB      { get; set; } = 2;
 
         private static UserConfig Load()
         {

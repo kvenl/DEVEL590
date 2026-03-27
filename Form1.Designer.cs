@@ -38,14 +38,14 @@ namespace The590Box
             ANT1B = new Button();
             ANT2B = new Button();
             ANT3RXB = new Button();
-            PREoff = new Button();
-            PROon = new Button();
-            rfGainTrackBar = new TrackBar();
-            volumeGainTrackBar = new TrackBar();
+            PREB = new Button();
+            ATTB = new Button();
+            rfGainTrackBar = new SilverKnobTrackBar();
+            volumeGainTrackBar = new SilverKnobTrackBar();
             textBox1 = new TextBox();
             textBox2 = new TextBox();
             BUSY_box = new TextBox();
-            pwrControlTrackBar = new TrackBar();
+            pwrControlTrackBar = new SilverKnobTrackBar();
             textBox3 = new TextBox();
             AMB = new Button();
             FMB = new Button();
@@ -61,7 +61,7 @@ namespace The590Box
             vfoALabel = new Label();
             vfoBLabel = new Label();
             MENU = new Button();
-            SQLtrackBar = new TrackBar();
+            SQLtrackBar = new SilverKnobTrackBar();
             SQLTextBox = new TextBox();
             SQLLabel = new Label();
             MUTE = new Button();
@@ -87,7 +87,7 @@ namespace The590Box
             ExtTuneButton.FlatAppearance.MouseOverBackColor = Color.Blue;
             ExtTuneButton.Font = new Font("Verdana", 8.25F, FontStyle.Bold);
             ExtTuneButton.ForeColor = Color.Yellow;
-            ExtTuneButton.Location = new Point(762, 83);
+            ExtTuneButton.Location = new Point(673, 80);
             ExtTuneButton.Name = "ExtTuneButton";
             ExtTuneButton.Size = new Size(88, 40);
             ExtTuneButton.TabIndex = 8;
@@ -184,44 +184,45 @@ namespace The590Box
             ANT3RXB.Text = "RX ANT";
             ANT3RXB.UseVisualStyleBackColor = false;
             // 
-            // PREoff
+            // PREB
             // 
-            PREoff.BackColor = Color.DarkGreen;
-            PREoff.FlatAppearance.BorderColor = Color.White;
-            PREoff.FlatAppearance.MouseDownBackColor = Color.Red;
-            PREoff.FlatAppearance.MouseOverBackColor = Color.Blue;
-            PREoff.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            PREoff.ForeColor = Color.Yellow;
-            PREoff.Location = new Point(376, 42);
-            PREoff.Name = "PREoff";
-            PREoff.Size = new Size(88, 40);
-            PREoff.TabIndex = 28;
-            PREoff.Text = "PRE off";
-            PREoff.UseVisualStyleBackColor = false;
+            PREB.BackColor = Color.DarkGreen;
+            PREB.FlatAppearance.BorderColor = Color.White;
+            PREB.FlatAppearance.MouseDownBackColor = Color.Red;
+            PREB.FlatAppearance.MouseOverBackColor = Color.Blue;
+            PREB.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            PREB.ForeColor = Color.Yellow;
+            PREB.Location = new Point(365, 1);
+            PREB.Name = "PREB";
+            PREB.Size = new Size(88, 40);
+            PREB.TabIndex = 28;
+            PREB.Text = "PRE";
+            PREB.UseVisualStyleBackColor = false;
             // 
-            // PROon
+            // ATTB
             // 
-            PROon.BackColor = Color.DarkGreen;
-            PROon.FlatAppearance.BorderColor = Color.White;
-            PROon.FlatAppearance.MouseDownBackColor = Color.Red;
-            PROon.FlatAppearance.MouseOverBackColor = Color.Blue;
-            PROon.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            PROon.ForeColor = Color.Yellow;
-            PROon.Location = new Point(376, 83);
-            PROon.Name = "PROon";
-            PROon.Size = new Size(88, 40);
-            PROon.TabIndex = 29;
-            PROon.Text = "PRE on";
-            PROon.UseVisualStyleBackColor = false;
+            ATTB.BackColor = Color.DarkGreen;
+            ATTB.FlatAppearance.BorderColor = Color.White;
+            ATTB.FlatAppearance.MouseDownBackColor = Color.Red;
+            ATTB.FlatAppearance.MouseOverBackColor = Color.Blue;
+            ATTB.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            ATTB.ForeColor = Color.Yellow;
+            ATTB.Location = new Point(365, 41);
+            ATTB.Name = "ATTB";
+            ATTB.Size = new Size(88, 40);
+            ATTB.TabIndex = 29;
+            ATTB.Text = "ATT";
+            ATTB.UseVisualStyleBackColor = false;
             // 
             // rfGainTrackBar
             // 
+            rfGainTrackBar.AutoSize = false;
             rfGainTrackBar.BackColor = Color.DarkGreen;
-            rfGainTrackBar.Location = new Point(562, 1);
+            rfGainTrackBar.Location = new Point(546, 1);
             rfGainTrackBar.Maximum = 255;
             rfGainTrackBar.Name = "rfGainTrackBar";
             rfGainTrackBar.Orientation = Orientation.Vertical;
-            rfGainTrackBar.Size = new Size(45, 110);
+            rfGainTrackBar.Size = new Size(40, 110);
             rfGainTrackBar.TabIndex = 42;
             rfGainTrackBar.TickFrequency = 16;
             rfGainTrackBar.TickStyle = TickStyle.Both;
@@ -229,12 +230,13 @@ namespace The590Box
             // 
             // volumeGainTrackBar
             // 
+            volumeGainTrackBar.AutoSize = false;
             volumeGainTrackBar.BackColor = Color.DarkGreen;
-            volumeGainTrackBar.Location = new Point(612, 1);
+            volumeGainTrackBar.Location = new Point(588, 1);
             volumeGainTrackBar.Maximum = 255;
             volumeGainTrackBar.Name = "volumeGainTrackBar";
             volumeGainTrackBar.Orientation = Orientation.Vertical;
-            volumeGainTrackBar.Size = new Size(45, 110);
+            volumeGainTrackBar.Size = new Size(40, 110);
             volumeGainTrackBar.TabIndex = 43;
             volumeGainTrackBar.TickFrequency = 16;
             volumeGainTrackBar.TickStyle = TickStyle.Both;
@@ -246,7 +248,7 @@ namespace The590Box
             textBox1.BorderStyle = BorderStyle.None;
             textBox1.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             textBox1.ForeColor = Color.Gold;
-            textBox1.Location = new Point(562, 110);
+            textBox1.Location = new Point(546, 105);
             textBox1.Margin = new Padding(0);
             textBox1.Multiline = true;
             textBox1.Name = "textBox1";
@@ -263,7 +265,7 @@ namespace The590Box
             textBox2.BorderStyle = BorderStyle.None;
             textBox2.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             textBox2.ForeColor = Color.Gold;
-            textBox2.Location = new Point(612, 110);
+            textBox2.Location = new Point(588, 105);
             textBox2.Margin = new Padding(0);
             textBox2.Multiline = true;
             textBox2.Name = "textBox2";
@@ -291,15 +293,16 @@ namespace The590Box
             // 
             // pwrControlTrackBar
             // 
-            pwrControlTrackBar.BackColor = Color.DarkGreen;
-            pwrControlTrackBar.Location = new Point(712, 1);
+            pwrControlTrackBar.AutoSize = false;
+            pwrControlTrackBar.BackColor = Color.Maroon;
+            pwrControlTrackBar.Location = new Point(769, 1);
             pwrControlTrackBar.Maximum = 100;
             pwrControlTrackBar.Minimum = 5;
             pwrControlTrackBar.Name = "pwrControlTrackBar";
             pwrControlTrackBar.Orientation = Orientation.Vertical;
-            pwrControlTrackBar.Size = new Size(45, 110);
+            pwrControlTrackBar.Size = new Size(40, 110);
             pwrControlTrackBar.TabIndex = 44;
-            pwrControlTrackBar.TickFrequency = 5;
+            pwrControlTrackBar.TickFrequency = 6;
             pwrControlTrackBar.TickStyle = TickStyle.Both;
             pwrControlTrackBar.Value = 100;
             // 
@@ -309,7 +312,7 @@ namespace The590Box
             textBox3.BorderStyle = BorderStyle.None;
             textBox3.Font = new Font("Verdana", 8F, FontStyle.Bold);
             textBox3.ForeColor = Color.Gold;
-            textBox3.Location = new Point(712, 110);
+            textBox3.Location = new Point(769, 105);
             textBox3.Margin = new Padding(0);
             textBox3.Multiline = true;
             textBox3.Name = "textBox3";
@@ -373,7 +376,7 @@ namespace The590Box
             IntTune.FlatAppearance.MouseOverBackColor = Color.Blue;
             IntTune.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             IntTune.ForeColor = Color.Yellow;
-            IntTune.Location = new Point(762, 1);
+            IntTune.Location = new Point(675, 1);
             IntTune.Name = "IntTune";
             IntTune.Size = new Size(88, 40);
             IntTune.TabIndex = 55;
@@ -388,7 +391,7 @@ namespace The590Box
             ItuneOn.FlatAppearance.MouseOverBackColor = Color.Blue;
             ItuneOn.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             ItuneOn.ForeColor = Color.Yellow;
-            ItuneOn.Location = new Point(762, 42);
+            ItuneOn.Location = new Point(676, 37);
             ItuneOn.Name = "ItuneOn";
             ItuneOn.Size = new Size(44, 40);
             ItuneOn.TabIndex = 56;
@@ -403,7 +406,7 @@ namespace The590Box
             ItuneOff.FlatAppearance.MouseOverBackColor = Color.Blue;
             ItuneOff.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             ItuneOff.ForeColor = Color.Yellow;
-            ItuneOff.Location = new Point(806, 42);
+            ItuneOff.Location = new Point(719, 36);
             ItuneOff.Name = "ItuneOff";
             ItuneOff.Size = new Size(44, 40);
             ItuneOff.TabIndex = 57;
@@ -416,7 +419,7 @@ namespace The590Box
             rfGainLabel.BackColor = Color.DarkGreen;
             rfGainLabel.Font = new Font("Verdana", 6F, FontStyle.Bold, GraphicsUnit.Point, 0);
             rfGainLabel.ForeColor = Color.Yellow;
-            rfGainLabel.Location = new Point(562, 1);
+            rfGainLabel.Location = new Point(546, 1);
             rfGainLabel.Name = "rfGainLabel";
             rfGainLabel.Size = new Size(44, 10);
             rfGainLabel.TabIndex = 0;
@@ -428,7 +431,7 @@ namespace The590Box
             volumeGainLabel.BackColor = Color.DarkGreen;
             volumeGainLabel.Font = new Font("Verdana", 6F, FontStyle.Bold, GraphicsUnit.Point, 0);
             volumeGainLabel.ForeColor = Color.Yellow;
-            volumeGainLabel.Location = new Point(612, 1);
+            volumeGainLabel.Location = new Point(588, 1);
             volumeGainLabel.Name = "volumeGainLabel";
             volumeGainLabel.Size = new Size(51, 10);
             volumeGainLabel.TabIndex = 0;
@@ -436,13 +439,12 @@ namespace The590Box
             // 
             // pwrControlLabel
             // 
-            pwrControlLabel.AutoSize = true;
-            pwrControlLabel.BackColor = Color.DarkGreen;
+            pwrControlLabel.BackColor = Color.Maroon;
             pwrControlLabel.Font = new Font("Verdana", 6F, FontStyle.Bold, GraphicsUnit.Point, 0);
             pwrControlLabel.ForeColor = Color.Yellow;
-            pwrControlLabel.Location = new Point(716, 1);
+            pwrControlLabel.Location = new Point(769, 1);
             pwrControlLabel.Name = "pwrControlLabel";
-            pwrControlLabel.Size = new Size(38, 10);
+            pwrControlLabel.Size = new Size(40, 10);
             pwrControlLabel.TabIndex = 0;
             pwrControlLabel.Text = "POWER";
             pwrControlLabel.TextAlign = ContentAlignment.MiddleCenter;
@@ -518,14 +520,15 @@ namespace The590Box
             // 
             // SQLtrackBar
             // 
+            SQLtrackBar.AutoSize = false;
             SQLtrackBar.BackColor = Color.DarkGreen;
-            SQLtrackBar.Location = new Point(662, 1);
+            SQLtrackBar.Location = new Point(630, 1);
             SQLtrackBar.Maximum = 255;
             SQLtrackBar.Name = "SQLtrackBar";
             SQLtrackBar.Orientation = Orientation.Vertical;
-            SQLtrackBar.Size = new Size(45, 110);
+            SQLtrackBar.Size = new Size(40, 110);
             SQLtrackBar.TabIndex = 61;
-            SQLtrackBar.TickFrequency = 25;
+            SQLtrackBar.TickFrequency = 16;
             SQLtrackBar.TickStyle = TickStyle.Both;
             // 
             // SQLTextBox
@@ -534,7 +537,7 @@ namespace The590Box
             SQLTextBox.BorderStyle = BorderStyle.None;
             SQLTextBox.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             SQLTextBox.ForeColor = Color.Gold;
-            SQLTextBox.Location = new Point(662, 110);
+            SQLTextBox.Location = new Point(630, 105);
             SQLTextBox.Margin = new Padding(0);
             SQLTextBox.Multiline = true;
             SQLTextBox.Name = "SQLTextBox";
@@ -551,7 +554,7 @@ namespace The590Box
             SQLLabel.BackColor = Color.DarkGreen;
             SQLLabel.Font = new Font("Verdana", 6F, FontStyle.Bold, GraphicsUnit.Point, 0);
             SQLLabel.ForeColor = Color.Yellow;
-            SQLLabel.Location = new Point(662, 1);
+            SQLLabel.Location = new Point(630, 1);
             SQLLabel.Name = "SQLLabel";
             SQLLabel.Size = new Size(48, 10);
             SQLLabel.TabIndex = 0;
@@ -565,7 +568,7 @@ namespace The590Box
             MUTE.FlatAppearance.MouseOverBackColor = Color.Blue;
             MUTE.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             MUTE.ForeColor = Color.Yellow;
-            MUTE.Location = new Point(376, 1);
+            MUTE.Location = new Point(382, 83);
             MUTE.Name = "MUTE";
             MUTE.Size = new Size(88, 40);
             MUTE.TabIndex = 63;
@@ -679,7 +682,7 @@ namespace The590Box
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Black;
-            ClientSize = new Size(850, 125);
+            ClientSize = new Size(818, 121);
             Controls.Add(STEP_combobox);
             Controls.Add(ABB);
             Controls.Add(BANDB);
@@ -710,8 +713,8 @@ namespace The590Box
             Controls.Add(VFOA_box);
             Controls.Add(volumeGainTrackBar);
             Controls.Add(rfGainTrackBar);
-            Controls.Add(PROon);
-            Controls.Add(PREoff);
+            Controls.Add(ATTB);
+            Controls.Add(PREB);
             Controls.Add(ANT3RXB);
             Controls.Add(ANT2B);
             Controls.Add(ANT1B);
@@ -749,11 +752,11 @@ namespace The590Box
         private System.Windows.Forms.Button ANT1B;
         private System.Windows.Forms.Button ANT2B;
         private System.Windows.Forms.Button ANT3RXB;
-        private System.Windows.Forms.Button PREoff;
-        private System.Windows.Forms.Button PROon;
-        private System.Windows.Forms.TrackBar rfGainTrackBar;
-        private System.Windows.Forms.TrackBar volumeGainTrackBar;
-        private System.Windows.Forms.TrackBar pwrControlTrackBar;
+        private System.Windows.Forms.Button PREB;
+        private System.Windows.Forms.Button ATTB;
+        private SilverKnobTrackBar rfGainTrackBar;
+        private SilverKnobTrackBar volumeGainTrackBar;
+        private SilverKnobTrackBar pwrControlTrackBar;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.TextBox textBox3;
@@ -772,7 +775,7 @@ namespace The590Box
         private System.Windows.Forms.Label vfoALabel;
         private System.Windows.Forms.Label vfoBLabel;
         private System.Windows.Forms.Button MENU;
-        private System.Windows.Forms.TrackBar SQLtrackBar;
+        private SilverKnobTrackBar SQLtrackBar;
         private System.Windows.Forms.TextBox SQLTextBox;
         private System.Windows.Forms.Label SQLLabel;
         private System.Windows.Forms.Button MUTE;

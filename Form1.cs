@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 // Code : Kees van Engelen (keesvanengelen@gmail.com)
 // 
-// Version : 9  (06 mrt 26); 
+// Version : 10a  (27 mrt 26); 
 // Name    : The590Box 
 
 
@@ -19,7 +19,7 @@ namespace The590Box
 {
     public partial class MainForm : Form
     {
-        private const string AppTitle = "The590Box v 9 - by Kees, ON9KVE";
+        private const string AppTitle = "The590Box v 10 - by Kees, ON9KVE";
 
         #region Radio Commands — Yaesu FTDX-101 CAT
         private const string CMD_READ_MODE = "MD;";
@@ -49,6 +49,9 @@ namespace The590Box
         private const string CMD_SET_RXANT_OFF = "AN909;";
         private const string CMD_SET_PREAMP_OFF = "PA0;";
         private const string CMD_SET_PREAMP_ON = "PA1;";
+        private const string CMD_READ_ATT = "RA;";
+        private const string CMD_SET_ATT_OFF = "RA00;";
+        private const string CMD_SET_ATT_ON = "RA01;";
         private const string CMD_SET_TUNER_OFF = "AC000;";
         private const string CMD_SET_TUNER_ON = "AC110;";
         private const string CMD_SET_TUNER_TUNE = "AC111;";
@@ -79,6 +82,7 @@ namespace The590Box
             CMD_READ_MODE,
             CMD_READ_ANT,
             CMD_READ_PREAMP,
+            CMD_READ_ATT,
             CMD_READ_MENU,
             CMD_READ_DATA,
             CMD_READ_RFGAIN,
@@ -105,6 +109,8 @@ namespace The590Box
         // Add a field to track the RX antenna state
         private bool rxAntennaOn = false;
         private bool dataOn = false; // Tracks the current DATA state
+        private bool preampOn = false;
+        private bool attOn = false;
         private bool menuA = true; // Tracks the current MENU state
         private bool vfoB = false;   // false = VFO-A active, true = VFO-B active
         private long currentVfoAHz = 0; // Current VFO-A frequency in 10 Hz units
@@ -167,9 +173,9 @@ namespace The590Box
             ANT2B.MouseClick += ANT2B_click;
             ANT3RXB.MouseClick += ANT3RXB_click;
 
-            // Preamp buttons
-            PREoff.MouseClick += PREoff_click;
-            PROon.MouseClick += PROon_click;
+            // Preamp / Attenuator buttons
+            PREB.MouseClick += PREB_click;
+            ATTB.MouseClick += ATTB_click;
 
             // Tuner buttons
             IntTune.Click += IntTune_Click;
@@ -196,8 +202,9 @@ namespace The590Box
 
             // Step combobox
             STEP_combobox.Items.AddRange(new object[] { "100 Hz", "500 Hz", "1 kHz", "5 kHz", "9 kHz" });
-            STEP_combobox.SelectedIndex = 2; // default: 1 kHz
+            STEP_combobox.SelectedIndex = Math.Clamp(UserConfig.Default.StepIndexA, 0, 4);
             STEP_combobox.DrawItem += ComboBox_DrawItem;
+            STEP_combobox.SelectedIndexChanged += StepCombobox_SelectedIndexChanged;
 
             // PLUSB / MINB
             PLUSB.Click += PLUSB_Click;
@@ -239,8 +246,15 @@ namespace The590Box
         private void ParsePreamp(string r)
         {
             if (r.Length < 3) return;
-            bool on = r[2] == '1';
-            SetButtonGroup(new[] { PREoff, PROon }, on ? PROon : PREoff);
+            preampOn = r[2] == '1';
+            SetButtonActive(PREB, preampOn);
+        }
+
+        private void ParseAttenuator(string r)
+        {
+            if (r.Length < 4) return;
+            attOn = r[3] == '1';
+            SetButtonActive(ATTB, attOn);
         }
 
         private void ParseMenu(string r)
@@ -266,7 +280,7 @@ namespace The590Box
                 isUpdatingFromRadio = true;
                 rfGainTrackBar.Value = Math.Clamp(slider, rfGainTrackBar.Minimum, rfGainTrackBar.Maximum);
                 isUpdatingFromRadio = false;
-                UpdateTextBox(textBox1, slider.ToString("D3"));
+                UpdateTextBox(textBox1, ToDisplayPercent(slider));
             }
         }
 
@@ -277,7 +291,7 @@ namespace The590Box
                 isUpdatingFromRadio = true;
                 volumeGainTrackBar.Value = Math.Clamp(v, volumeGainTrackBar.Minimum, volumeGainTrackBar.Maximum);
                 isUpdatingFromRadio = false;
-                UpdateTextBox(textBox2, v.ToString("D3"));
+                UpdateTextBox(textBox2, ToDisplayPercent(v));
             }
         }
 
@@ -299,7 +313,7 @@ namespace The590Box
                 isUpdatingFromRadio = true;
                 SQLtrackBar.Value = Math.Clamp(v, SQLtrackBar.Minimum, SQLtrackBar.Maximum);
                 isUpdatingFromRadio = false;
-                UpdateTextBox(SQLTextBox, v.ToString("D3"));
+                UpdateTextBox(SQLTextBox, ToDisplayPercent(v));
             }
         }
 
@@ -337,6 +351,9 @@ namespace The590Box
             string b = mhz >= 10 ? (mhz / 10).ToString() : " ";
             return $"{b}{mhz % 10}.{khz:D3}.{hh:D2}";
         }
+
+        private static string ToDisplayPercent(int value, int max = 255) =>
+            ((int)Math.Round(value / (double)max * 100)).ToString("D3");
 
         private static int GetBandFromHz(long hz)
         {
@@ -432,6 +449,7 @@ namespace The590Box
             if (cmd == CMD_READ_MODE) ParseMode(response);
             else if (cmd == CMD_READ_ANT) ParseAnt(response);
             else if (cmd == CMD_READ_PREAMP) ParsePreamp(response);
+            else if (cmd == CMD_READ_ATT) ParseAttenuator(response);
             else if (cmd == CMD_READ_MENU) ParseMenu(response);
             else if (cmd == CMD_READ_DATA) ParseData(response);
             else if (cmd == CMD_READ_RFGAIN) ParseRfGain(response);
@@ -536,7 +554,16 @@ namespace The590Box
         {
             vfoB = !vfoB;
             IssueCmd(vfoB ? CMD_SET_VFO_B : CMD_SET_VFO_A);
+            STEP_combobox.SelectedIndex = Math.Clamp(
+                vfoB ? UserConfig.Default.StepIndexB : UserConfig.Default.StepIndexA, 0, 4);
             UpdateABBButton();
+        }
+
+        private void StepCombobox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (vfoB) UserConfig.Default.StepIndexB = STEP_combobox.SelectedIndex;
+            else      UserConfig.Default.StepIndexA = STEP_combobox.SelectedIndex;
+            UserConfig.Default.Save();
         }
 
         private void StepActiveVfo(int direction)
@@ -562,9 +589,19 @@ namespace The590Box
 
 
 
-        private void PREoff_click(object sender, MouseEventArgs e) { IssueCmd(CMD_SET_PREAMP_OFF); } // AMP off
+        private void PREB_click(object sender, MouseEventArgs e)
+        {
+            preampOn = !preampOn;
+            IssueCmd(preampOn ? CMD_SET_PREAMP_ON : CMD_SET_PREAMP_OFF);
+            SetButtonActive(PREB, preampOn);
+        }
 
-        private void PROon_click(object sender, MouseEventArgs e) { IssueCmd(CMD_SET_PREAMP_ON); } // AMP on
+        private void ATTB_click(object sender, MouseEventArgs e)
+        {
+            attOn = !attOn;
+            IssueCmd(attOn ? CMD_SET_ATT_ON : CMD_SET_ATT_OFF);
+            SetButtonActive(ATTB, attOn);
+        }
 
 
         private void textBox1_TextChanged_1(object sender, EventArgs e) { }
@@ -600,7 +637,7 @@ namespace The590Box
         {
             if (isUpdatingFromRadio) return;
             int v = rfGainTrackBar.Value;
-            UpdateTextBox(textBox1, v.ToString("D3"));
+            UpdateTextBox(textBox1, ToDisplayPercent(v));
             pendingSliderCommands[rfGainTrackBar] = $"RG{(rfGainTrackBar.Maximum - v):D3};";
             sliderDebounceTimer.Stop();
             sliderDebounceTimer.Start();
@@ -610,7 +647,7 @@ namespace The590Box
         {
             if (isUpdatingFromRadio) return;
             int v = volumeGainTrackBar.Value;
-            UpdateTextBox(textBox2, v.ToString("D3"));
+            UpdateTextBox(textBox2, ToDisplayPercent(v));
             pendingSliderCommands[volumeGainTrackBar] = $"AG0{v:D3};";
             sliderDebounceTimer.Stop();
             sliderDebounceTimer.Start();
@@ -630,7 +667,7 @@ namespace The590Box
         {
             if (isUpdatingFromRadio) return;
             int v = SQLtrackBar.Value;
-            UpdateTextBox(SQLTextBox, v.ToString("D3"));
+            UpdateTextBox(SQLTextBox, ToDisplayPercent(v));
             pendingSliderCommands[SQLtrackBar] = $"SQ0{v:D3};";
             sliderDebounceTimer.Stop();
             sliderDebounceTimer.Start();
