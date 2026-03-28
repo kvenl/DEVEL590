@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 // Code : Kees van Engelen (keesvanengelen@gmail.com)
 // 
-// Version : 10a  (27 mrt 26); 
+// Version : 11  (28 mrt 26); 
 // Name    : The590Box 
 
 
@@ -19,7 +19,7 @@ namespace The590Box
 {
     public partial class MainForm : Form
     {
-        private const string AppTitle = "The590Box v 10 - by Kees, ON9KVE";
+        private const string AppTitle = "The590Box v 11 - by Kees, ON9KVE";
 
         #region Radio Commands — Yaesu FTDX-101 CAT
         private const string CMD_READ_MODE = "MD;";
