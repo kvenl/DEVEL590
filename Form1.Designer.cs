@@ -42,11 +42,11 @@ namespace The590Box
             ATTB = new Button();
             rfGainTrackBar = new SilverKnobTrackBar();
             volumeGainTrackBar = new SilverKnobTrackBar();
-            textBox1 = new TextBox();
-            textBox2 = new TextBox();
+            RFTextBox = new TextBox();
+            VOLTextBox = new TextBox();
             BUSY_box = new TextBox();
             pwrControlTrackBar = new SilverKnobTrackBar();
-            textBox3 = new TextBox();
+            POWERTextBox = new TextBox();
             AMB = new Button();
             FMB = new Button();
             DIGB = new Button();
@@ -261,39 +261,39 @@ namespace The590Box
             volumeGainTrackBar.TickStyle = TickStyle.Both;
             volumeGainTrackBar.Value = 60;
             // 
-            // textBox1
+            // RFTextBox
             // 
-            textBox1.BackColor = Color.Black;
-            textBox1.BorderStyle = BorderStyle.None;
-            textBox1.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            textBox1.ForeColor = Color.Gold;
-            textBox1.Location = new Point(3, 226);
-            textBox1.Margin = new Padding(0);
-            textBox1.Multiline = true;
-            textBox1.Name = "textBox1";
-            textBox1.Size = new Size(45, 16);
-            textBox1.TabIndex = 46;
-            textBox1.TabStop = false;
-            textBox1.Text = "00";
-            textBox1.TextAlign = HorizontalAlignment.Center;
-            textBox1.WordWrap = false;
+            RFTextBox.BackColor = Color.Black;
+            RFTextBox.BorderStyle = BorderStyle.None;
+            RFTextBox.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            RFTextBox.ForeColor = Color.Gold;
+            RFTextBox.Location = new Point(3, 226);
+            RFTextBox.Margin = new Padding(0);
+            RFTextBox.Multiline = true;
+            RFTextBox.Name = "RFTextBox";
+            RFTextBox.Size = new Size(45, 16);
+            RFTextBox.TabIndex = 46;
+            RFTextBox.TabStop = false;
+            RFTextBox.Text = "00";
+            RFTextBox.TextAlign = HorizontalAlignment.Center;
+            RFTextBox.WordWrap = false;
             // 
-            // textBox2
+            // VOLTextBox
             // 
-            textBox2.BackColor = Color.Black;
-            textBox2.BorderStyle = BorderStyle.None;
-            textBox2.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            textBox2.ForeColor = Color.Gold;
-            textBox2.Location = new Point(49, 226);
-            textBox2.Margin = new Padding(0);
-            textBox2.Multiline = true;
-            textBox2.Name = "textBox2";
-            textBox2.Size = new Size(45, 16);
-            textBox2.TabIndex = 47;
-            textBox2.TabStop = false;
-            textBox2.Text = "00";
-            textBox2.TextAlign = HorizontalAlignment.Center;
-            textBox2.WordWrap = false;
+            VOLTextBox.BackColor = Color.Black;
+            VOLTextBox.BorderStyle = BorderStyle.None;
+            VOLTextBox.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            VOLTextBox.ForeColor = Color.Gold;
+            VOLTextBox.Location = new Point(49, 226);
+            VOLTextBox.Margin = new Padding(0);
+            VOLTextBox.Multiline = true;
+            VOLTextBox.Name = "VOLTextBox";
+            VOLTextBox.Size = new Size(45, 16);
+            VOLTextBox.TabIndex = 47;
+            VOLTextBox.TabStop = false;
+            VOLTextBox.Text = "00";
+            VOLTextBox.TextAlign = HorizontalAlignment.Center;
+            VOLTextBox.WordWrap = false;
             // 
             // BUSY_box
             // 
@@ -328,20 +328,20 @@ namespace The590Box
             // 
             // textBox3
             // 
-            textBox3.BackColor = Color.Black;
-            textBox3.BorderStyle = BorderStyle.None;
-            textBox3.Font = new Font("Verdana", 8F, FontStyle.Bold);
-            textBox3.ForeColor = Color.Gold;
-            textBox3.Location = new Point(560, 127);
-            textBox3.Margin = new Padding(0);
-            textBox3.Multiline = true;
-            textBox3.Name = "textBox3";
-            textBox3.Size = new Size(40, 15);
-            textBox3.TabIndex = 45;
-            textBox3.TabStop = false;
-            textBox3.Text = "00";
-            textBox3.TextAlign = HorizontalAlignment.Center;
-            textBox3.WordWrap = false;
+            POWERTextBox.BackColor = Color.Black;
+            POWERTextBox.BorderStyle = BorderStyle.None;
+            POWERTextBox.Font = new Font("Verdana", 8F, FontStyle.Bold);
+            POWERTextBox.ForeColor = Color.Gold;
+            POWERTextBox.Location = new Point(560, 127);
+            POWERTextBox.Margin = new Padding(0);
+            POWERTextBox.Multiline = true;
+            POWERTextBox.Name = "POWERTextBox";
+            POWERTextBox.Size = new Size(40, 15);
+            POWERTextBox.TabIndex = 45;
+            POWERTextBox.TabStop = false;
+            POWERTextBox.Text = "00";
+            POWERTextBox.TextAlign = HorizontalAlignment.Center;
+            POWERTextBox.WordWrap = false;
             // 
             // AMB
             // 
@@ -962,8 +962,8 @@ namespace The590Box
             Controls.Add(FMB);
             Controls.Add(AMB);
             Controls.Add(BUSY_box);
-            Controls.Add(textBox2);
-            Controls.Add(textBox1);
+            Controls.Add(VOLTextBox);
+            Controls.Add(RFTextBox);
             Controls.Add(vfoBLabel);
             Controls.Add(vfoALabel);
             Controls.Add(VFOB_box);
@@ -980,7 +980,7 @@ namespace The590Box
             Controls.Add(USBB);
             Controls.Add(ExtTuneButton);
             Controls.Add(pwrControlTrackBar);
-            Controls.Add(textBox3);
+            Controls.Add(POWERTextBox);
             Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             ForeColor = Color.Yellow;
             FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -1016,9 +1016,9 @@ namespace The590Box
         private SilverKnobTrackBar rfGainTrackBar;
         private SilverKnobTrackBar volumeGainTrackBar;
         private SilverKnobTrackBar pwrControlTrackBar;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.TextBox textBox3;
+        private System.Windows.Forms.TextBox RFTextBox;
+        private System.Windows.Forms.TextBox VOLTextBox;
+        private System.Windows.Forms.TextBox POWERTextBox;
         private System.Windows.Forms.TextBox BUSY_box;
         private System.Windows.Forms.Button AMB;
         private System.Windows.Forms.Button FMB;

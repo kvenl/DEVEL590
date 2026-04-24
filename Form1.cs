@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 // Code : Kees van Engelen (keesvanengelen@gmail.com)
 // 
-// Version : 1.4  (22 apr 26); 
+// Version : 1.5  (24 apr 26); 
 // Name    : The590Box 
 
 
@@ -19,7 +19,7 @@ namespace The590Box
 {
     public partial class MainForm : Form
     {
-        private const string AppTitle = "The590Box v 1.4 - by Kees, ON9KVE";
+        private const string AppTitle = "The590Box v 1.5 - by Kees, ON9KVE";
 
         #region Radio Commands — Kenwood TS-590SG
         private const string CMD_READ_MODE = "MD;";
@@ -449,8 +449,32 @@ namespace The590Box
         {
             if (r.Length < 4) return;
             string x = r.Substring(2, 1), y = r.Substring(3, 1);
-            Button? active = y == "1" ? ANT3RXB : x switch { "1" => ANT1B, "2" => ANT2B, _ => null };
-            SetButtonGroup(new[] { ANT1B, ANT2B, ANT3RXB }, active);
+            bool rxOn = y == "1";
+            Button? txBtn = x switch { "1" => ANT1B, "2" => ANT2B, _ => null };
+
+            rxAntennaOn = rxOn;
+
+            void Apply()
+            {
+                ANT1B.BackColor   = Color.DarkGreen;
+                ANT2B.BackColor   = Color.DarkGreen;
+                ANT3RXB.BackColor = Color.DarkGreen;
+
+                if (rxOn)
+                {
+                    ANT3RXB.BackColor = Color.DarkRed;              // RX ant active
+                    if (txBtn != null)
+                        txBtn.BackColor = Color.Orange;             // TX antenna shown in orange
+                }
+                else
+                {
+                    if (txBtn != null)
+                        txBtn.BackColor = Color.DarkRed;            // normal active antenna
+                }
+            }
+
+            if (ANT1B.InvokeRequired) ANT1B.BeginInvoke((Action)Apply);
+            else Apply();
         }
 
         private void ParsePreamp(string r)
@@ -490,7 +514,7 @@ namespace The590Box
                 isUpdatingFromRadio = true;
                 rfGainTrackBar.Value = Math.Clamp(slider, rfGainTrackBar.Minimum, rfGainTrackBar.Maximum);
                 isUpdatingFromRadio = false;
-                UpdateTextBox(textBox1, ToDisplayPercent(slider));
+                UpdateTextBox(RFTextBox, ToDisplayPercent(slider));
             }
         }
 
@@ -501,7 +525,7 @@ namespace The590Box
                 isUpdatingFromRadio = true;
                 volumeGainTrackBar.Value = Math.Clamp(v, volumeGainTrackBar.Minimum, volumeGainTrackBar.Maximum);
                 isUpdatingFromRadio = false;
-                UpdateTextBox(textBox2, ToDisplayPercent(v));
+                UpdateTextBox(VOLTextBox, ToDisplayPercent(v));
             }
         }
 
@@ -512,9 +536,10 @@ namespace The590Box
                 isUpdatingFromRadio = true;
                 pwrControlTrackBar.Value = Math.Clamp(v, pwrControlTrackBar.Minimum, pwrControlTrackBar.Maximum);
                 isUpdatingFromRadio = false;
-                UpdateTextBox(textBox3, v.ToString("D3"));
+                UpdateTextBox(POWERTextBox, v.ToString("D3"));
             }
         }
+
 
         private void ParseSquelch(string r)
         {
@@ -876,8 +901,8 @@ namespace The590Box
         {
             if (isUpdatingFromRadio) return;
             int v = rfGainTrackBar.Value;
-            UpdateTextBox(textBox1, ToDisplayPercent(v));
-            pendingSliderCommands[rfGainTrackBar] = $"RG{(rfGainTrackBar.Maximum - v):D3};";
+            UpdateTextBox(RFTextBox, ToDisplayPercent(v));
+            pendingSliderCommands[rfGainTrackBar] = $"RG{255 - v:D3};";
             sliderDebounceTimer.Stop();
             sliderDebounceTimer.Start();
         }
@@ -886,7 +911,7 @@ namespace The590Box
         {
             if (isUpdatingFromRadio) return;
             int v = volumeGainTrackBar.Value;
-            UpdateTextBox(textBox2, ToDisplayPercent(v));
+            UpdateTextBox(VOLTextBox, ToDisplayPercent(v));
             pendingSliderCommands[volumeGainTrackBar] = $"AG0{v:D3};";
             sliderDebounceTimer.Stop();
             sliderDebounceTimer.Start();
@@ -896,7 +921,7 @@ namespace The590Box
         {
             if (isUpdatingFromRadio) return;
             int v = pwrControlTrackBar.Value;
-            UpdateTextBox(textBox3, v.ToString("D3"));
+            UpdateTextBox(POWERTextBox, v.ToString("D3"));
             pendingSliderCommands[pwrControlTrackBar] = $"PC{v:D3};";
             sliderDebounceTimer.Stop();
             sliderDebounceTimer.Start();
