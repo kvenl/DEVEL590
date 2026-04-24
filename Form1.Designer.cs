@@ -104,9 +104,9 @@ namespace The590Box
             ExtTuneButton.FlatAppearance.MouseOverBackColor = Color.Blue;
             ExtTuneButton.Font = new Font("Verdana", 8.25F, FontStyle.Bold);
             ExtTuneButton.ForeColor = Color.Yellow;
-            ExtTuneButton.Location = new Point(426, 81);
+            ExtTuneButton.Location = new Point(418, 201);
             ExtTuneButton.Name = "ExtTuneButton";
-            ExtTuneButton.Size = new Size(85, 40);
+            ExtTuneButton.Size = new Size(88, 40);
             ExtTuneButton.TabIndex = 8;
             ExtTuneButton.Text = "Ext Tuner";
             ExtTuneButton.UseVisualStyleBackColor = false;
@@ -119,7 +119,7 @@ namespace The590Box
             USBB.FlatAppearance.MouseOverBackColor = Color.Blue;
             USBB.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             USBB.ForeColor = Color.Yellow;
-            USBB.Location = new Point(240, 120);
+            USBB.Location = new Point(240, 121);
             USBB.Name = "USBB";
             USBB.Size = new Size(44, 40);
             USBB.TabIndex = 11;
@@ -134,7 +134,7 @@ namespace The590Box
             LSBB.FlatAppearance.MouseOverBackColor = Color.Blue;
             LSBB.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             LSBB.ForeColor = Color.Yellow;
-            LSBB.Location = new Point(284, 120);
+            LSBB.Location = new Point(284, 121);
             LSBB.Name = "LSBB";
             LSBB.Size = new Size(44, 40);
             LSBB.TabIndex = 12;
@@ -315,12 +315,12 @@ namespace The590Box
             pwrControlTrackBar.AutoSize = false;
             pwrControlTrackBar.BackColor = Color.Maroon;
             pwrControlTrackBar.KnobColor = Color.Red;
-            pwrControlTrackBar.Location = new Point(534, 12);
+            pwrControlTrackBar.Location = new Point(560, 12);
             pwrControlTrackBar.Maximum = 100;
             pwrControlTrackBar.Minimum = 5;
             pwrControlTrackBar.Name = "pwrControlTrackBar";
             pwrControlTrackBar.Orientation = Orientation.Vertical;
-            pwrControlTrackBar.Size = new Size(40, 102);
+            pwrControlTrackBar.Size = new Size(40, 115);
             pwrControlTrackBar.TabIndex = 44;
             pwrControlTrackBar.TickFrequency = 6;
             pwrControlTrackBar.TickStyle = TickStyle.Both;
@@ -332,7 +332,7 @@ namespace The590Box
             textBox3.BorderStyle = BorderStyle.None;
             textBox3.Font = new Font("Verdana", 8F, FontStyle.Bold);
             textBox3.ForeColor = Color.Gold;
-            textBox3.Location = new Point(534, 111);
+            textBox3.Location = new Point(560, 127);
             textBox3.Margin = new Padding(0);
             textBox3.Multiline = true;
             textBox3.Name = "textBox3";
@@ -396,7 +396,7 @@ namespace The590Box
             IntTune.FlatAppearance.MouseOverBackColor = Color.Blue;
             IntTune.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             IntTune.ForeColor = Color.Yellow;
-            IntTune.Location = new Point(423, 1);
+            IntTune.Location = new Point(418, 121);
             IntTune.Name = "IntTune";
             IntTune.Size = new Size(88, 40);
             IntTune.TabIndex = 55;
@@ -411,7 +411,7 @@ namespace The590Box
             ItuneOn.FlatAppearance.MouseOverBackColor = Color.Blue;
             ItuneOn.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             ItuneOn.ForeColor = Color.Yellow;
-            ItuneOn.Location = new Point(423, 41);
+            ItuneOn.Location = new Point(418, 161);
             ItuneOn.Name = "ItuneOn";
             ItuneOn.Size = new Size(45, 40);
             ItuneOn.TabIndex = 56;
@@ -426,7 +426,7 @@ namespace The590Box
             ItuneOff.FlatAppearance.MouseOverBackColor = Color.Blue;
             ItuneOff.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             ItuneOff.ForeColor = Color.Yellow;
-            ItuneOff.Location = new Point(464, 41);
+            ItuneOff.Location = new Point(462, 161);
             ItuneOff.Name = "ItuneOff";
             ItuneOff.Size = new Size(44, 40);
             ItuneOff.TabIndex = 57;
@@ -462,7 +462,7 @@ namespace The590Box
             pwrControlLabel.BackColor = Color.Maroon;
             pwrControlLabel.Font = new Font("Verdana", 6F, FontStyle.Bold, GraphicsUnit.Point, 0);
             pwrControlLabel.ForeColor = Color.Yellow;
-            pwrControlLabel.Location = new Point(534, 1);
+            pwrControlLabel.Location = new Point(560, 1);
             pwrControlLabel.Name = "pwrControlLabel";
             pwrControlLabel.Size = new Size(40, 10);
             pwrControlLabel.TabIndex = 0;
@@ -472,7 +472,7 @@ namespace The590Box
             // VFOA_box
             // 
             VFOA_box.BackColor = Color.DarkGreen;
-            VFOA_box.Font = new Font("Consolas", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            VFOA_box.Font = new Font("Courier New", 20.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             VFOA_box.ForeColor = Color.Yellow;
             VFOA_box.Location = new Point(36, 1);
             VFOA_box.Multiline = true;
@@ -487,7 +487,7 @@ namespace The590Box
             // VFOB_box
             // 
             VFOB_box.BackColor = Color.DarkBlue;
-            VFOB_box.Font = new Font("Consolas", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            VFOB_box.Font = new Font("Courier New", 20.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             VFOB_box.ForeColor = Color.Yellow;
             VFOB_box.Location = new Point(36, 52);
             VFOB_box.Multiline = true;
@@ -506,7 +506,7 @@ namespace The590Box
             vfoALabel.ForeColor = Color.Yellow;
             vfoALabel.Location = new Point(2, 1);
             vfoALabel.Name = "vfoALabel";
-            vfoALabel.Size = new Size(34, 33);
+            vfoALabel.Size = new Size(34, 50);
             vfoALabel.TabIndex = 0;
             vfoALabel.Text = "VFO-A";
             vfoALabel.TextAlign = ContentAlignment.MiddleCenter;
@@ -516,9 +516,9 @@ namespace The590Box
             vfoBLabel.BackColor = Color.DarkBlue;
             vfoBLabel.Font = new Font("Verdana", 6F, FontStyle.Bold, GraphicsUnit.Point, 0);
             vfoBLabel.ForeColor = Color.Yellow;
-            vfoBLabel.Location = new Point(2, 36);
+            vfoBLabel.Location = new Point(2, 52);
             vfoBLabel.Name = "vfoBLabel";
-            vfoBLabel.Size = new Size(34, 33);
+            vfoBLabel.Size = new Size(34, 50);
             vfoBLabel.TabIndex = 0;
             vfoBLabel.Text = "VFO-B";
             vfoBLabel.TextAlign = ContentAlignment.MiddleCenter;
@@ -531,7 +531,7 @@ namespace The590Box
             MENU.FlatAppearance.MouseOverBackColor = Color.Blue;
             MENU.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             MENU.ForeColor = Color.Yellow;
-            MENU.Location = new Point(577, 213);
+            MENU.Location = new Point(520, 219);
             MENU.Name = "MENU";
             MENU.Size = new Size(88, 22);
             MENU.TabIndex = 59;
@@ -604,7 +604,7 @@ namespace The590Box
             comPortComboBox.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             comPortComboBox.ForeColor = Color.Yellow;
             comPortComboBox.ItemHeight = 16;
-            comPortComboBox.Location = new Point(577, 157);
+            comPortComboBox.Location = new Point(520, 169);
             comPortComboBox.Name = "comPortComboBox";
             comPortComboBox.Size = new Size(88, 22);
             comPortComboBox.TabIndex = 64;
@@ -617,7 +617,7 @@ namespace The590Box
             connectButton.FlatAppearance.MouseOverBackColor = Color.Blue;
             connectButton.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             connectButton.ForeColor = Color.Yellow;
-            connectButton.Location = new Point(577, 129);
+            connectButton.Location = new Point(520, 145);
             connectButton.Name = "connectButton";
             connectButton.Size = new Size(88, 22);
             connectButton.TabIndex = 65;
@@ -693,7 +693,7 @@ namespace The590Box
             STEP_combobox.ForeColor = Color.Yellow;
             STEP_combobox.IntegralHeight = false;
             STEP_combobox.ItemHeight = 16;
-            STEP_combobox.Location = new Point(577, 185);
+            STEP_combobox.Location = new Point(520, 194);
             STEP_combobox.Name = "STEP_combobox";
             STEP_combobox.Size = new Size(88, 22);
             STEP_combobox.TabIndex = 71;
@@ -792,7 +792,7 @@ namespace The590Box
             NB0B.FlatAppearance.MouseOverBackColor = Color.Blue;
             NB0B.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             NB0B.ForeColor = Color.Yellow;
-            NB0B.Location = new Point(423, 120);
+            NB0B.Location = new Point(418, 1);
             NB0B.Name = "NB0B";
             NB0B.Size = new Size(44, 40);
             NB0B.TabIndex = 78;
@@ -807,7 +807,7 @@ namespace The590Box
             NR0B.FlatAppearance.MouseOverBackColor = Color.Blue;
             NR0B.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             NR0B.ForeColor = Color.Yellow;
-            NR0B.Location = new Point(423, 161);
+            NR0B.Location = new Point(418, 41);
             NR0B.Name = "NR0B";
             NR0B.Size = new Size(44, 40);
             NR0B.TabIndex = 79;
@@ -822,7 +822,7 @@ namespace The590Box
             BC0B.FlatAppearance.MouseOverBackColor = Color.Blue;
             BC0B.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             BC0B.ForeColor = Color.Yellow;
-            BC0B.Location = new Point(423, 202);
+            BC0B.Location = new Point(418, 81);
             BC0B.Name = "BC0B";
             BC0B.Size = new Size(44, 40);
             BC0B.TabIndex = 80;
@@ -837,7 +837,7 @@ namespace The590Box
             NB1B.FlatAppearance.MouseOverBackColor = Color.Blue;
             NB1B.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             NB1B.ForeColor = Color.Yellow;
-            NB1B.Location = new Point(464, 120);
+            NB1B.Location = new Point(461, 1);
             NB1B.Name = "NB1B";
             NB1B.Size = new Size(44, 40);
             NB1B.TabIndex = 81;
@@ -852,7 +852,7 @@ namespace The590Box
             NB2B.FlatAppearance.MouseOverBackColor = Color.Blue;
             NB2B.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             NB2B.ForeColor = Color.Yellow;
-            NB2B.Location = new Point(504, 121);
+            NB2B.Location = new Point(504, 1);
             NB2B.Name = "NB2B";
             NB2B.Size = new Size(44, 40);
             NB2B.TabIndex = 82;
@@ -867,7 +867,7 @@ namespace The590Box
             NR1B.FlatAppearance.MouseOverBackColor = Color.Blue;
             NR1B.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             NR1B.ForeColor = Color.Yellow;
-            NR1B.Location = new Point(464, 161);
+            NR1B.Location = new Point(461, 41);
             NR1B.Name = "NR1B";
             NR1B.Size = new Size(44, 40);
             NR1B.TabIndex = 83;
@@ -882,7 +882,7 @@ namespace The590Box
             NR2B.FlatAppearance.MouseOverBackColor = Color.Blue;
             NR2B.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             NR2B.ForeColor = Color.Yellow;
-            NR2B.Location = new Point(504, 163);
+            NR2B.Location = new Point(504, 41);
             NR2B.Name = "NR2B";
             NR2B.Size = new Size(44, 40);
             NR2B.TabIndex = 84;
@@ -897,7 +897,7 @@ namespace The590Box
             BC1B.FlatAppearance.MouseOverBackColor = Color.Blue;
             BC1B.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             BC1B.ForeColor = Color.Yellow;
-            BC1B.Location = new Point(464, 201);
+            BC1B.Location = new Point(461, 81);
             BC1B.Name = "BC1B";
             BC1B.Size = new Size(44, 40);
             BC1B.TabIndex = 85;
@@ -912,7 +912,7 @@ namespace The590Box
             BC2B.FlatAppearance.MouseOverBackColor = Color.Blue;
             BC2B.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             BC2B.ForeColor = Color.Yellow;
-            BC2B.Location = new Point(504, 202);
+            BC2B.Location = new Point(504, 81);
             BC2B.Name = "BC2B";
             BC2B.Size = new Size(44, 40);
             BC2B.TabIndex = 86;
@@ -924,7 +924,7 @@ namespace The590Box
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Black;
-            ClientSize = new Size(961, 241);
+            ClientSize = new Size(612, 241);
             Controls.Add(BC2B);
             Controls.Add(BC1B);
             Controls.Add(NR2B);

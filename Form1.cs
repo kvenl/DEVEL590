@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 // Code : Kees van Engelen (keesvanengelen@gmail.com)
 // 
-// Version : 1.3  (21 apr 26); 
+// Version : 1.4  (22 apr 26); 
 // Name    : The590Box 
 
 
@@ -19,7 +19,7 @@ namespace The590Box
 {
     public partial class MainForm : Form
     {
-        private const string AppTitle = "The590Box v 1.3 - by Kees, ON9KVE";
+        private const string AppTitle = "The590Box v 1.4 - by Kees, ON9KVE";
 
         #region Radio Commands — Kenwood TS-590SG
         private const string CMD_READ_MODE = "MD;";
@@ -57,13 +57,19 @@ namespace The590Box
         private const string CMD_SET_TUNER_TUNE = "AC111;";
         private const string CMD_SET_MENU_A = "MF0;";
         private const string CMD_SET_MENU_B = "MF1;";
-        private const string CMD_SET_DATA_OFF   = "DA0;";
-        private const string CMD_SET_DATA_ON    = "DA1;";
-        private const string CMD_SET_VOL_MUTE   = "AG0000;";
-        private const string CMD_SET_BAND       = "BD";   // append 2-digit band 00-10 + ;
-        private const string CMD_READ_VFO_SEL      = "FR;";
-        private const string CMD_SET_VFO_A         = "FR0;";
-        private const string CMD_SET_VFO_B         = "FR1;";
+        private const string CMD_SET_DATA_OFF = "DA0;";
+        private const string CMD_SET_DATA_ON = "DA1;";
+        private const string CMD_SET_VOL_MUTE = "AG0000;";
+        private const string CMD_SET_BAND = "BD";   // append 2-digit band 00-10 + ;
+        private const string CMD_READ_VFO_SEL = "FR;";
+        private const string CMD_SET_VFO_A = "FR0;";
+        private const string CMD_SET_VFO_B = "FR1;";
+        private const string CMD_READ_EX028 = "EX0280000;";
+        private const string CMD_READ_EX029 = "EX0290000;";
+        private const string CMD_READ_SH    = "SH;";
+        private const string CMD_READ_SL    = "SL;";
+        private const string CMD_READ_FW    = "FW;";
+        private const string CMD_READ_IS    = "IS;";
         #endregion
 
         public SerialPort? Serial_Port;
@@ -93,6 +99,12 @@ namespace The590Box
             CMD_READ_VFO2,
             CMD_READ_TUNER,
             CMD_READ_VFO_SEL,
+            CMD_READ_EX028,
+            CMD_READ_EX029,
+            CMD_READ_SH,
+            CMD_READ_SL,
+            CMD_READ_FW,
+            CMD_READ_IS,
         };
 
         // Slider debounce
@@ -106,6 +118,8 @@ namespace The590Box
              FColorB, Pstr, Mode, ModeD, Dspipo, DspipoD, SButton, DScopspan, Bar = "";
         public decimal Dsppodnum, SecondNum;
 
+        private enum SliderMode { HLMode, WSMode }
+
         // Add a field to track the RX antenna state
         private bool rxAntennaOn = false;
         private bool dataOn = false; // Tracks the current DATA state
@@ -116,10 +130,14 @@ namespace The590Box
         private long currentVfoAHz = 0; // Current VFO-A frequency in 10 Hz units
         private long currentVfoBHz = 0; // Current VFO-B frequency in 10 Hz units
         private static readonly long[] StepValues = { 10, 50, 100, 500, 900 }; // 100 Hz, 500 Hz, 1 kHz, 5 kHz, 9 kHz
-                                   //      private bool isRxAntennaOff = false;
+                                                                               //      private bool isRxAntennaOff = false;
         private bool muted = false;
         private int savedVolume = 0;
         private bool internalTunerOn = false;
+        private SliderMode currentSliderMode = SliderMode.HLMode;
+        private char currentModeChar = '0'; // last received mode character from MD;
+        private int ex028 = 0;              // SSB filter menu: 0=normal(HLMode), 1=WSMode
+        private int ex029 = 0;              // DIG filter menu: 0=normal(HLMode), 1=WSMode
         public MainForm()
         {
             InitializeComponent();
@@ -194,15 +212,23 @@ namespace The590Box
             MUTE.Click += MuteButton_Click;
 
             // Sliders
-            rfGainTrackBar.ValueChanged += RfGainTrackBar_ValueChanged;
+            rfGainTrackBar.ValueChanged    += RfGainTrackBar_ValueChanged;
             volumeGainTrackBar.ValueChanged += VolumeGainTrackBar_ValueChanged;
             pwrControlTrackBar.ValueChanged += PwrControlTrackBar_ValueChanged;
-            SQLtrackBar.ValueChanged += SQLtrackBar_ValueChanged;
+            SQLtrackBar.ValueChanged        += SQLtrackBar_ValueChanged;
+            HiShTrackBar.ValueChanged       += HiShTrackBar_ValueChanged;
+            LoWdTrackBar.ValueChanged       += LoWdTrackBar_ValueChanged;
+            HiShTrackBar.MouseDown          += (s, e) => { if (e.Button == MouseButtons.Right) ResetSliderToDefault(HiShTrackBar, isHiSh: true); };
+            LoWdTrackBar.MouseDown          += (s, e) => { if (e.Button == MouseButtons.Right) ResetSliderToDefault(LoWdTrackBar, isHiSh: false); };
+
+            // VFO frequency entry on double-click
+            VFOA_box.MouseDoubleClick += (s, e) => OpenFreqEntry(vfoA: true);
+            VFOB_box.MouseDoubleClick += (s, e) => OpenFreqEntry(vfoA: false);
 
             // COM port selector + connect button
             comPortComboBox.DrawItem += ComboBox_DrawItem;
             comPortComboBox.DropDown += (s, e) => PopulateComPorts();
-            connectButton.Click      += ConnectButton_Click;
+            connectButton.Click += ConnectButton_Click;
 
             // Band button
             BANDB.MouseDown += BandButton_MouseClick;
@@ -215,7 +241,7 @@ namespace The590Box
 
             // PLUSB / MINB
             PLUSB.Click += PLUSB_Click;
-            MINB.Click  += MINB_Click;
+            MINB.Click += MINB_Click;
 
             // A/B VFO swap
             ABB.Click += ABB_Click;
@@ -238,8 +264,185 @@ namespace The590Box
         private void ParseMode(string r)
         {
             if (r.Length < 3) return;
-            Button? active = r[2] switch { '1' => LSBB, '2' => USBB, '3' => CWB, '4' => FMB, '5' => AMB, _ => null };
-            SetButtonGroup(new[] { USBB, LSBB, CWB, AMB, FMB }, active);
+            // DIG mode returns "MD0C" — map to internal char 'D'
+            currentModeChar = (r.Length >= 4 && r[2] == '0' && r[3] == 'C') ? 'D' : r[2];
+            Button? active = currentModeChar switch
+            {
+                '1' => LSBB, '2' => USBB, '3' => CWB,
+                '4' => FMB,  '5' => AMB,  'D' => DIGB, _ => null
+            };
+            SetButtonGroup(new[] { USBB, LSBB, CWB, AMB, FMB, DIGB }, active);
+            UpdateSliderMode();
+        }
+
+        // WSMode: CW always; DIG + EX029=1; SSB(LSB/USB) + EX028=1 — everything else is HLMode
+        private void UpdateSliderMode()
+        {
+            bool ws = currentModeChar == '3'                         // CW
+                   || (currentModeChar == 'D' && ex029 == 1)         // DIG + EX029=1
+                   || (currentModeChar == '1' && ex028 == 1)         // LSB + EX028=1
+                   || (currentModeChar == '2' && ex028 == 1);        // USB + EX028=1
+
+            currentSliderMode = ws ? SliderMode.WSMode : SliderMode.HLMode;
+
+            if (currentSliderMode == SliderMode.WSMode)
+            {
+                HiShLabel.Text = "SHIFT";
+                LoWdLabel.Text = "WIDTH";
+            }
+            else
+            {
+                HiShLabel.Text = "HIGH";
+                LoWdLabel.Text = "LOW";
+            }
+
+            ApplySliderConfig(GetCurrentSliderConfig());
+        }
+
+        // --- Slider step configurations ---
+        private record SliderConfig(int[] HiSteps, int HiDefault, int[] LoSteps, int LoDefault);
+
+        private static readonly SliderConfig CfgAmHL = new(
+            HiSteps:   new[] { 2500, 3000, 4000, 5000 },
+            HiDefault: 5000,
+            LoSteps:   new[] { 0, 100, 200, 300 },
+            LoDefault: 100);
+
+        private static readonly SliderConfig CfgSsbFmHL = new(
+            HiSteps:   new[] { 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000, 3400, 4000, 5000 },
+            HiDefault: 2600,
+            LoSteps:   new[] { 0, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000 },
+            LoDefault: 300);
+
+        private static readonly SliderConfig CfgCwWS = new(
+            HiSteps:   new[] { 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000 },
+            HiDefault: 800,
+            LoSteps:   new[] { 50, 80, 100, 150, 200, 250, 300, 400, 500, 600, 1000, 1500, 2000, 2500 },
+            LoDefault: 500);
+
+        private static readonly SliderConfig CfgDigWS = new(
+            HiSteps:   new[] { 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1750, 1800, 1900, 2000, 2100, 2210 },
+            HiDefault: 1500,
+            LoSteps:   new[] { 50, 80, 100, 150, 200, 250, 300, 400, 500, 600, 1000, 1500, 2000, 2500 },
+            LoDefault: 2500);
+
+        private SliderConfig GetCurrentSliderConfig() =>
+            (currentModeChar, currentSliderMode) switch
+            {
+                ('5', SliderMode.HLMode) => CfgAmHL,    // AM HLMode
+                ('3', SliderMode.WSMode) => CfgCwWS,    // CW WSMode
+                (_, SliderMode.WSMode)   => CfgDigWS,   // SSB WSMode + DIG WSMode
+                _                        => CfgSsbFmHL  // SSB/FM/DIG HLMode
+            };
+
+        private void ApplySliderConfig(SliderConfig cfg)
+        {
+            bool connected = Serial_Port?.IsOpen == true;
+            isUpdatingFromRadio = true;
+            try
+            {
+                HiShTrackBar.Minimum       = 0;
+                HiShTrackBar.Maximum       = cfg.HiSteps.Length - 1;
+                HiShTrackBar.TickFrequency = 1;
+                if (!connected)
+                {
+                    int hiIdx = Array.IndexOf(cfg.HiSteps, cfg.HiDefault);
+                    HiShTrackBar.Value = hiIdx >= 0 ? hiIdx : 0;
+                    HiShTextBox.Text   = cfg.HiSteps[HiShTrackBar.Value].ToString();
+                }
+
+                LoWdTrackBar.Minimum       = 0;
+                LoWdTrackBar.Maximum       = cfg.LoSteps.Length - 1;
+                LoWdTrackBar.TickFrequency = 1;
+                if (!connected)
+                {
+                    int loIdx = Array.IndexOf(cfg.LoSteps, cfg.LoDefault);
+                    LoWdTrackBar.Value = loIdx >= 0 ? loIdx : 0;
+                    LoWdTextBox.Text   = cfg.LoSteps[LoWdTrackBar.Value].ToString();
+                }
+            }
+            finally { isUpdatingFromRadio = false; }
+        }
+
+        private void ParseEx028(string r)
+        {
+            // Response: EX0280000a  (a = '0' or '1', last char)
+            if (r.Length < 9) return;
+            int val = r[r.Length - 1] - '0';
+            if (val != ex028) { ex028 = val; UpdateSliderMode(); }
+        }
+
+        private void ParseEx029(string r)
+        {
+            // Response: EX0290000a  (a = '0' or '1', last char)
+            if (r.Length < 9) return;
+            int val = r[r.Length - 1] - '0';
+            if (val != ex029) { ex029 = val; UpdateSliderMode(); }
+        }
+
+        private void ParseSH(string r)
+        {
+            // Response: SHxx  (xx = 2-digit index)
+            if (r.Length < 4 || currentSliderMode != SliderMode.HLMode) return;
+            if (!int.TryParse(r.Substring(2, 2), out int idx)) return;
+            var cfg = GetCurrentSliderConfig();
+            if (idx < 0 || idx >= cfg.HiSteps.Length) return;
+            isUpdatingFromRadio = true;
+            HiShTrackBar.Value = idx;
+            HiShTextBox.Text   = cfg.HiSteps[idx].ToString();
+            isUpdatingFromRadio = false;
+        }
+
+        private void ParseSL(string r)
+        {
+            // Response: SLxx  (xx = 2-digit index)
+            if (r.Length < 4 || currentSliderMode != SliderMode.HLMode) return;
+            if (!int.TryParse(r.Substring(2, 2), out int idx)) return;
+            var cfg = GetCurrentSliderConfig();
+            if (idx < 0 || idx >= cfg.LoSteps.Length) return;
+            isUpdatingFromRadio = true;
+            LoWdTrackBar.Value = idx;
+            LoWdTextBox.Text   = cfg.LoSteps[idx].ToString();
+            isUpdatingFromRadio = false;
+        }
+
+        private void ParseFW(string r)
+        {
+            // Response: FWxxxx  (xxxx = 4-digit Hz value)
+            if (r.Length < 6 || currentSliderMode != SliderMode.WSMode) return;
+            if (!int.TryParse(r.Substring(2, 4), out int hz)) return;
+            var cfg = GetCurrentSliderConfig();
+            int idx = Array.IndexOf(cfg.LoSteps, hz);
+            if (idx < 0) idx = FindClosestIndex(cfg.LoSteps, hz);
+            isUpdatingFromRadio = true;
+            LoWdTrackBar.Value = Math.Clamp(idx, 0, cfg.LoSteps.Length - 1);
+            LoWdTextBox.Text   = hz.ToString();
+            isUpdatingFromRadio = false;
+        }
+
+        private void ParseIS(string r)
+        {
+            // Response: IS0xxxx  (x=always 0, xxxx = 4-digit Hz value)
+            if (r.Length < 7 || currentSliderMode != SliderMode.WSMode) return;
+            if (!int.TryParse(r.Substring(3, 4), out int hz)) return;
+            var cfg = GetCurrentSliderConfig();
+            int idx = Array.IndexOf(cfg.HiSteps, hz);
+            if (idx < 0) idx = FindClosestIndex(cfg.HiSteps, hz);
+            isUpdatingFromRadio = true;
+            HiShTrackBar.Value = Math.Clamp(idx, 0, cfg.HiSteps.Length - 1);
+            HiShTextBox.Text   = hz.ToString();
+            isUpdatingFromRadio = false;
+        }
+
+        private static int FindClosestIndex(int[] steps, int value)
+        {
+            int bestIdx = 0, bestDist = int.MaxValue;
+            for (int i = 0; i < steps.Length; i++)
+            {
+                int dist = Math.Abs(steps[i] - value);
+                if (dist < bestDist) { bestDist = dist; bestIdx = i; }
+            }
+            return bestIdx;
         }
 
         private void ParseAnt(string r)
@@ -354,7 +557,7 @@ namespace The590Box
         {
             long mhz = hz / 100000;
             long khz = (hz % 100000) / 100;
-            long hh  = hz % 100;
+            long hh = hz % 100;
             string b = mhz >= 10 ? (mhz / 10).ToString() : " ";
             return $"{b}{mhz % 10}.{khz:D3}.{hh:D2}";
         }
@@ -365,9 +568,9 @@ namespace The590Box
         private static int GetBandFromHz(long hz)
         {
             // IARU Region 1 (Europe) band boundaries
-            if (hz >=  181000 && hz <=  190000) return 0;  // 1.8 MHz  (1.810 – 1.900)
-            if (hz >=  350000 && hz <=  380000) return 1;  // 3.5 MHz  (3.500 – 3.800)
-            if (hz >=  700000 && hz <=  720000) return 2;  // 7 MHz    (7.000 – 7.200)
+            if (hz >= 181000 && hz <= 190000) return 0;  // 1.8 MHz  (1.810 – 1.900)
+            if (hz >= 350000 && hz <= 380000) return 1;  // 3.5 MHz  (3.500 – 3.800)
+            if (hz >= 700000 && hz <= 720000) return 2;  // 7 MHz    (7.000 – 7.200)
             if (hz >= 1010000 && hz <= 1015000) return 3;  // 10 MHz   (10.100 – 10.150)
             if (hz >= 1400000 && hz <= 1435000) return 4;  // 14 MHz   (14.000 – 14.350)
             if (hz >= 1806800 && hz <= 1816800) return 5;  // 18 MHz   (18.068 – 18.168)
@@ -381,14 +584,14 @@ namespace The590Box
         private void UpdateBandButton()
         {
             if (BANDB.InvokeRequired) { BANDB.BeginInvoke((Action)UpdateBandButton); return; }
-            BANDB.Text     = BandLabels[currentBand];
+            BANDB.Text = BandLabels[currentBand];
             BANDB.BackColor = vfoB ? Color.DarkBlue : Color.DarkGreen;
         }
 
         private void BandButton_MouseClick(object sender, MouseEventArgs e)
         {
             int newBand;
-            if      (e.Button == MouseButtons.Left)  newBand = (currentBand + 1)  % 11;
+            if (e.Button == MouseButtons.Left) newBand = (currentBand + 1) % 11;
             else if (e.Button == MouseButtons.Right) newBand = (currentBand + 10) % 11;
             else return;
             currentBand = newBand;
@@ -414,9 +617,9 @@ namespace The590Box
 
         private void UpdateABBButton()
         {
-            ABB.Text        = vfoB ? "VFO-B" : "VFO-A";
-            ABB.BackColor   = vfoB ? Color.DarkBlue : Color.DarkGreen;
-            MINB.BackColor  = vfoB ? Color.DarkBlue : Color.DarkGreen;
+            ABB.Text = vfoB ? "VFO-B" : "VFO-A";
+            ABB.BackColor = vfoB ? Color.DarkBlue : Color.DarkGreen;
+            MINB.BackColor = vfoB ? Color.DarkBlue : Color.DarkGreen;
             PLUSB.BackColor = vfoB ? Color.DarkBlue : Color.DarkGreen;
             UpdateBandButton();
         }
@@ -467,6 +670,12 @@ namespace The590Box
             else if (cmd == CMD_READ_VFO2) ParseVfoB(response);
             else if (cmd == CMD_READ_TUNER) ParseTuner(response);
             else if (cmd == CMD_READ_VFO_SEL) ParseVfoSel(response);
+            else if (cmd == CMD_READ_EX028) ParseEx028(response);
+            else if (cmd == CMD_READ_EX029) ParseEx029(response);
+            else if (cmd == CMD_READ_SH) ParseSH(response);
+            else if (cmd == CMD_READ_SL) ParseSL(response);
+            else if (cmd == CMD_READ_FW) ParseFW(response);
+            else if (cmd == CMD_READ_IS) ParseIS(response);
 
             string blok = "█";
             UpdateTextBox(BUSY_box, BUSY_box.Text == blok ? " " : blok);
@@ -486,7 +695,7 @@ namespace The590Box
             {
                 if (Serial_Port == null || !Serial_Port.IsOpen) return;
                 IssueCmd(cmd);
-                Thread.Sleep(80);
+                Thread.Sleep(6);
             }
         }
 
@@ -569,7 +778,7 @@ namespace The590Box
         private void StepCombobox_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (vfoB) UserConfig.Default.StepIndexB = STEP_combobox.SelectedIndex;
-            else      UserConfig.Default.StepIndexA = STEP_combobox.SelectedIndex;
+            else UserConfig.Default.StepIndexA = STEP_combobox.SelectedIndex;
             UserConfig.Default.Save();
         }
 
@@ -591,6 +800,41 @@ namespace The590Box
                 IssueCmd($"FA{currentVfoAHz * 10L:D11};");
                 UpdateTextBox(VFOA_box, FormatFrequency(currentVfoAHz));
                 pollIndex = Array.IndexOf(pollCmds, CMD_READ_VFO1);
+            }
+        }
+
+        private void OpenFreqEntry(bool vfoA)
+        {
+            if (Serial_Port?.IsOpen != true) return;
+            long currentHz = vfoA ? currentVfoAHz : currentVfoBHz;
+            double currentKhz = currentHz / 100.0;
+
+            // Position popup just below the clicked VFO box
+            var box = vfoA ? VFOA_box : VFOB_box;
+            var loc = box.PointToScreen(new Point(0, box.Height + 2));
+
+            using var popup = new FreqEntryForm(currentKhz, loc);
+            if (popup.ShowDialog(this) != DialogResult.OK) return;
+
+            // Convert kHz input to 10 Hz units
+            long newHz = (long)Math.Round(popup.EnteredKhz * 100);
+            newHz = Math.Max(1, newHz);
+
+            if (vfoA)
+            {
+                currentVfoAHz = newHz;
+                IssueCmd($"FA{newHz * 10L:D11};");
+                UpdateTextBox(VFOA_box, FormatFrequency(newHz));
+                int band = GetBandFromHz(newHz);
+                if (band != currentBand) { currentBand = band; UpdateBandButton(); }
+                pollIndex = Array.IndexOf(pollCmds, CMD_READ_VFO1);
+            }
+            else
+            {
+                currentVfoBHz = newHz;
+                IssueCmd($"FB{newHz * 10L:D11};");
+                UpdateTextBox(VFOB_box, FormatFrequency(newHz));
+                pollIndex = Array.IndexOf(pollCmds, CMD_READ_VFO2);
             }
         }
 
@@ -664,6 +908,61 @@ namespace The590Box
             int v = SQLtrackBar.Value;
             UpdateTextBox(SQLTextBox, ToDisplayPercent(v));
             pendingSliderCommands[SQLtrackBar] = $"SQ0{v:D3};";
+            sliderDebounceTimer.Stop();
+            sliderDebounceTimer.Start();
+        }
+
+        private void ResetSliderToDefault(SilverKnobTrackBar slider, bool isHiSh)
+        {
+            var cfg = GetCurrentSliderConfig();
+            if (isHiSh)
+            {
+                int idx = Array.IndexOf(cfg.HiSteps, cfg.HiDefault);
+                if (idx < 0) idx = 0;
+                slider.Value     = idx;
+                HiShTextBox.Text = cfg.HiSteps[idx].ToString();
+                string cmd = currentSliderMode == SliderMode.HLMode
+                    ? $"SH{idx:D2};"
+                    : $"IS0{cfg.HiDefault:D4};";
+                IssueCmd(cmd);
+            }
+            else
+            {
+                int idx = Array.IndexOf(cfg.LoSteps, cfg.LoDefault);
+                if (idx < 0) idx = 0;
+                slider.Value     = idx;
+                LoWdTextBox.Text = cfg.LoSteps[idx].ToString();
+                string cmd = currentSliderMode == SliderMode.HLMode
+                    ? $"SL{idx:D2};"
+                    : $"FW{cfg.LoDefault:D4};";
+                IssueCmd(cmd);
+            }
+        }
+
+        private void HiShTrackBar_ValueChanged(object sender, EventArgs e)
+        {
+            if (isUpdatingFromRadio) return;
+            var cfg = GetCurrentSliderConfig();
+            int freq = cfg.HiSteps[HiShTrackBar.Value];
+            HiShTextBox.Text = freq.ToString();
+            string cmd = currentSliderMode == SliderMode.HLMode
+                ? $"SH{HiShTrackBar.Value:D2};"
+                : $"IS0{freq:D4};";
+            pendingSliderCommands[HiShTrackBar] = cmd;
+            sliderDebounceTimer.Stop();
+            sliderDebounceTimer.Start();
+        }
+
+        private void LoWdTrackBar_ValueChanged(object sender, EventArgs e)
+        {
+            if (isUpdatingFromRadio) return;
+            var cfg = GetCurrentSliderConfig();
+            int freq = cfg.LoSteps[LoWdTrackBar.Value];
+            LoWdTextBox.Text = freq.ToString();
+            string cmd = currentSliderMode == SliderMode.HLMode
+                ? $"SL{LoWdTrackBar.Value:D2};"
+                : $"FW{freq:D4};";
+            pendingSliderCommands[LoWdTrackBar] = cmd;
             sliderDebounceTimer.Stop();
             sliderDebounceTimer.Start();
         }
@@ -824,14 +1123,14 @@ namespace The590Box
             if (muted)
             {
                 int vol = savedVolume;
-                Task.Run(() => { IssueCmd($"AG0{vol:D3};"); Thread.Sleep(60); });
+                Task.Run(() => { IssueCmd($"AG0{vol:D3};"); Thread.Sleep(6); });
                 SetButtonActive(MUTE, false);
                 muted = false;
             }
             else
             {
                 savedVolume = volumeGainTrackBar.Value;
-                Task.Run(() => { IssueCmd(CMD_SET_VOL_MUTE); Thread.Sleep(60); });
+                Task.Run(() => { IssueCmd(CMD_SET_VOL_MUTE); Thread.Sleep(6); });
                 SetButtonActive(MUTE, true);
                 muted = true;
             }
@@ -869,6 +1168,11 @@ namespace The590Box
         }
 
         private void MainForm_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pwrControlLabel_Click(object sender, EventArgs e)
         {
 
         }
