@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 // Code : Kees van Engelen (keesvanengelen@gmail.com)
 // 
-// Version : 1.6  (25 apr 26); 
+// Version : 1.7  (25 apr 26); 
 // Name    : The590Box 
 
 
@@ -19,7 +19,7 @@ namespace The590Box
 {
     public partial class MainForm : Form
     {
-        private const string AppTitle = "The590Box v 1.6 - by Kees, ON9KVE";
+        private const string AppTitle = "The590Box v 1.7 - by Kees, ON9KVE";
 
         #region Radio Commands — Kenwood TS-590SG
         private const string CMD_READ_MODE = "MD;";
@@ -73,6 +73,7 @@ namespace The590Box
         private const string CMD_READ_SL    = "SL;";
         private const string CMD_READ_FW    = "FW;";
         private const string CMD_READ_IS    = "IS;";
+        private const string CMD_READ_SWR   = "RM;";
         #endregion
 
         public SerialPort? Serial_Port;
@@ -85,7 +86,8 @@ namespace The590Box
 
         // Poll timer
         private readonly System.Windows.Forms.Timer pollTimer = new();
-        private int pollIndex = 0;
+        private int  pollIndex  = 0;
+        private bool pollBusy   = false;  // prevents overlapping async poll ticks
         private readonly string[] pollCmds =
         {
             CMD_READ_MODE,
@@ -111,6 +113,7 @@ namespace The590Box
             CMD_READ_SL,
             CMD_READ_FW,
             CMD_READ_IS,
+            CMD_READ_SWR,
         };
 
         // Slider debounce
@@ -140,6 +143,12 @@ namespace The590Box
         private bool muted = false;
         private int savedVolume = 0;
         private bool internalTunerOn = false;
+        // SWR blink state
+        private readonly System.Windows.Forms.Timer swrBlinkTimer = new() { Interval = 300 };
+        private int    swrBlinkCount    = 0;
+        private string swrMuteText      = "";
+        private Color  swrMuteBackColor = Color.DarkGreen;
+        private Color  swrMuteForeColor = Color.Yellow;
         private int nbState = 0;
         private int nrState = 0;
         private int bcState = 0;
@@ -166,7 +175,7 @@ namespace The590Box
         private void InitializeTrackBarEvents()
         {
             // Timers
-            pollTimer.Interval = 80;
+            pollTimer.Interval = 15;
             pollTimer.Tick += PollTimer_Tick;
             sliderDebounceTimer.Interval = 150;
             sliderDebounceTimer.Tick += SliderDebounceTimer_Tick;
@@ -254,6 +263,9 @@ namespace The590Box
 
             // A/B VFO swap
             ABB.Click += ABB_Click;
+
+            // SWR blink timer
+            swrBlinkTimer.Tick += SwrBlinkTimer_Tick;
 
             // NB / NR / BC buttons
             NB0B.MouseClick += NB0B_MouseClick;
@@ -749,6 +761,45 @@ namespace The590Box
         { bcState = 2; IssueCmd("BC2;"); UpdateBCButtons(); }
         // ─────────────────────────────────────────────────────────────────────
 
+        // ── SWR ───────────────────────────────────────────────────────────────
+        private void ParseSWR(string r)
+        {
+            // Response: "RM" + x(1) + yyyy(4) = 7 chars, x='1' means SWR meter
+            if (r.Length < 7 || r[2] != '1') return;
+            if (int.TryParse(r.Substring(3, 4), out int val) && val >= 11)
+                StartSwrBlink();
+        }
+
+        private void StartSwrBlink()
+        {
+            if (MUTE.InvokeRequired) { MUTE.BeginInvoke((Action)StartSwrBlink); return; }
+            if (swrBlinkTimer.Enabled) return;          // already blinking
+            swrMuteText      = MUTE.Text;
+            swrMuteBackColor = MUTE.BackColor;
+            swrMuteForeColor = MUTE.ForeColor;
+            swrBlinkCount    = 0;
+            swrBlinkTimer.Start();
+        }
+
+        private void SwrBlinkTimer_Tick(object sender, EventArgs e)
+        {
+            swrBlinkCount++;
+            if (swrBlinkCount > 10)                     // 10 half-cycles = 5 full blinks
+            {
+                swrBlinkTimer.Stop();
+                swrBlinkCount    = 0;
+                MUTE.Text        = swrMuteText;
+                MUTE.BackColor   = swrMuteBackColor;
+                MUTE.ForeColor   = swrMuteForeColor;
+                return;
+            }
+            bool on = swrBlinkCount % 2 == 1;           // odd ticks = blink ON
+            MUTE.Text      = on ? "HI SWR"       : swrMuteText;
+            MUTE.BackColor = on ? Color.Yellow    : swrMuteBackColor;
+            MUTE.ForeColor = on ? Color.Red       : swrMuteForeColor;
+        }
+        // ─────────────────────────────────────────────────────────────────────
+
         private void SetButtonActive(Button btn, bool active)
         {
             if (btn.InvokeRequired) { btn.BeginInvoke((Action)(() => SetButtonActive(btn, active))); return; }
@@ -762,23 +813,32 @@ namespace The590Box
                 btn.BackColor = btn == active ? Color.DarkRed : Color.DarkGreen;
         }
 
-        private void PollTimer_Tick(object sender, EventArgs e)
+        private async void PollTimer_Tick(object sender, EventArgs e)
         {
             if (Serial_Port == null || !Serial_Port.IsOpen) return;
+            if (pollBusy) return;        // previous tick still running — skip this one
+            pollBusy = true;
+
             string cmd = pollCmds[pollIndex];
             pollIndex = (pollIndex + 1) % pollCmds.Length;
-            string response;
-            try
+
+            string? response = await Task.Run(() =>
             {
-                lock (serialLock)
+                try
                 {
-                    Serial_Port.DiscardInBuffer();
-                    Serial_Port.Write(cmd);
-                    Thread.Sleep(6);
-                    response = Serial_Port.ReadTo(";");
+                    lock (serialLock)
+                    {
+                        Serial_Port.DiscardInBuffer();
+                        Serial_Port.Write(cmd);
+                        Thread.Sleep(6);
+                        return Serial_Port.ReadTo(";");
+                    }
                 }
-            }
-            catch { return; }
+                catch { return null; }
+            });
+
+            pollBusy = false;
+            if (response == null) return;
 
             if (cmd == CMD_READ_MODE) ParseMode(response);
             else if (cmd == CMD_READ_ANT) ParseAnt(response);
@@ -803,6 +863,7 @@ namespace The590Box
             else if (cmd == CMD_READ_SL) ParseSL(response);
             else if (cmd == CMD_READ_FW) ParseFW(response);
             else if (cmd == CMD_READ_IS) ParseIS(response);
+            else if (cmd == CMD_READ_SWR) ParseSWR(response);
 
             string blok = "█";
             UpdateTextBox(BUSY_box, BUSY_box.Text == blok ? " " : blok);
@@ -822,7 +883,6 @@ namespace The590Box
             {
                 if (Serial_Port == null || !Serial_Port.IsOpen) return;
                 IssueCmd(cmd);
-                Thread.Sleep(6);
             }
         }
 
