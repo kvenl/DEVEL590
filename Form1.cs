@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 // Code : Kees van Engelen (keesvanengelen@gmail.com)
 // 
-// Version : 1.5  (24 apr 26); 
+// Version : 1.6  (25 apr 26); 
 // Name    : The590Box 
 
 
@@ -19,7 +19,7 @@ namespace The590Box
 {
     public partial class MainForm : Form
     {
-        private const string AppTitle = "The590Box v 1.5 - by Kees, ON9KVE";
+        private const string AppTitle = "The590Box v 1.6 - by Kees, ON9KVE";
 
         #region Radio Commands — Kenwood TS-590SG
         private const string CMD_READ_MODE = "MD;";
@@ -31,6 +31,9 @@ namespace The590Box
         private const string CMD_READ_VOLUME = "AG0;";
         private const string CMD_READ_POWER = "PC;";
         private const string CMD_READ_SQUELCH = "SQ0;";
+        private const string CMD_READ_NB = "NB;";
+        private const string CMD_READ_NR = "NR;";
+        private const string CMD_READ_BC = "BC;";
         private const string CMD_READ_VFO1 = "FA;";
         private const string CMD_READ_VFO2 = "FB;";
         private const string CMD_READ_TUNER = "AC;";
@@ -95,6 +98,9 @@ namespace The590Box
             CMD_READ_VOLUME,
             CMD_READ_POWER,
             CMD_READ_SQUELCH,
+            CMD_READ_NB,
+            CMD_READ_NR,
+            CMD_READ_BC,
             CMD_READ_VFO1,
             CMD_READ_VFO2,
             CMD_READ_TUNER,
@@ -134,6 +140,9 @@ namespace The590Box
         private bool muted = false;
         private int savedVolume = 0;
         private bool internalTunerOn = false;
+        private int nbState = 0;
+        private int nrState = 0;
+        private int bcState = 0;
         private SliderMode currentSliderMode = SliderMode.HLMode;
         private char currentModeChar = '0'; // last received mode character from MD;
         private int ex028 = 0;              // SSB filter menu: 0=normal(HLMode), 1=WSMode
@@ -245,6 +254,17 @@ namespace The590Box
 
             // A/B VFO swap
             ABB.Click += ABB_Click;
+
+            // NB / NR / BC buttons
+            NB0B.MouseClick += NB0B_MouseClick;
+            NB1B.MouseDown  += NB1B_MouseDown;
+            NB2B.MouseDown  += NB2B_MouseDown;
+            NR0B.MouseClick += NR0B_MouseClick;
+            NR1B.MouseClick += NR1B_MouseClick;
+            NR2B.MouseClick += NR2B_MouseClick;
+            BC0B.MouseClick += BC0B_MouseClick;
+            BC1B.MouseClick += BC1B_MouseClick;
+            BC2B.MouseClick += BC2B_MouseClick;
         }
 
         private void UpdateTextBox(TextBox tb, string text, Color? foreColor = null)
@@ -650,6 +670,85 @@ namespace The590Box
         }
         #endregion
 
+        // ── NB / NR / BC ────────────────────────────────────────────────────
+        private void UpdateNBButtons()
+        {
+            if (NB0B.InvokeRequired) { NB0B.BeginInvoke((Action)UpdateNBButtons); return; }
+            NB0B.BackColor = nbState == 0 ? Color.DarkRed : Color.DarkGreen;
+            NB1B.BackColor = (nbState == 1 || nbState == 3) ? Color.DarkRed : Color.DarkGreen;
+            NB2B.BackColor = (nbState == 2 || nbState == 3) ? Color.DarkRed : Color.DarkGreen;
+        }
+
+        private void UpdateNRButtons()
+        {
+            if (NR0B.InvokeRequired) { NR0B.BeginInvoke((Action)UpdateNRButtons); return; }
+            NR0B.BackColor = nrState == 0 ? Color.DarkRed : Color.DarkGreen;
+            NR1B.BackColor = nrState == 1 ? Color.DarkRed : Color.DarkGreen;
+            NR2B.BackColor = nrState == 2 ? Color.DarkRed : Color.DarkGreen;
+        }
+
+        private void UpdateBCButtons()
+        {
+            if (BC0B.InvokeRequired) { BC0B.BeginInvoke((Action)UpdateBCButtons); return; }
+            BC0B.BackColor = bcState == 0 ? Color.DarkRed : Color.DarkGreen;
+            BC1B.BackColor = bcState == 1 ? Color.DarkRed : Color.DarkGreen;
+            BC2B.BackColor = bcState == 2 ? Color.DarkRed : Color.DarkGreen;
+        }
+
+        private void ParseNB(string r)
+        {
+            if (r.Length >= 3 && int.TryParse(r.Substring(2, 1), out int v))
+            { nbState = v; UpdateNBButtons(); }
+        }
+
+        private void ParseNR(string r)
+        {
+            if (r.Length >= 3 && int.TryParse(r.Substring(2, 1), out int v))
+            { nrState = v; UpdateNRButtons(); }
+        }
+
+        private void ParseBC(string r)
+        {
+            if (r.Length >= 3 && int.TryParse(r.Substring(2, 1), out int v))
+            { bcState = v; UpdateBCButtons(); }
+        }
+
+        private void NB0B_MouseClick(object sender, MouseEventArgs e)
+        { nbState = 0; IssueCmd("NB0;"); UpdateNBButtons(); }
+
+        private void NB1B_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right) { nbState = 3; IssueCmd("NB3;"); }
+            else { nbState = 1; IssueCmd("NB1;"); }
+            UpdateNBButtons();
+        }
+
+        private void NB2B_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right) { nbState = 3; IssueCmd("NB3;"); }
+            else { nbState = 2; IssueCmd("NB2;"); }
+            UpdateNBButtons();
+        }
+
+        private void NR0B_MouseClick(object sender, MouseEventArgs e)
+        { nrState = 0; IssueCmd("NR0;"); UpdateNRButtons(); }
+
+        private void NR1B_MouseClick(object sender, MouseEventArgs e)
+        { nrState = 1; IssueCmd("NR1;"); UpdateNRButtons(); }
+
+        private void NR2B_MouseClick(object sender, MouseEventArgs e)
+        { nrState = 2; IssueCmd("NR2;"); UpdateNRButtons(); }
+
+        private void BC0B_MouseClick(object sender, MouseEventArgs e)
+        { bcState = 0; IssueCmd("BC0;"); UpdateBCButtons(); }
+
+        private void BC1B_MouseClick(object sender, MouseEventArgs e)
+        { bcState = 1; IssueCmd("BC1;"); UpdateBCButtons(); }
+
+        private void BC2B_MouseClick(object sender, MouseEventArgs e)
+        { bcState = 2; IssueCmd("BC2;"); UpdateBCButtons(); }
+        // ─────────────────────────────────────────────────────────────────────
+
         private void SetButtonActive(Button btn, bool active)
         {
             if (btn.InvokeRequired) { btn.BeginInvoke((Action)(() => SetButtonActive(btn, active))); return; }
@@ -691,6 +790,9 @@ namespace The590Box
             else if (cmd == CMD_READ_VOLUME) ParseVolume(response);
             else if (cmd == CMD_READ_POWER) ParsePower(response);
             else if (cmd == CMD_READ_SQUELCH) ParseSquelch(response);
+            else if (cmd == CMD_READ_NB) ParseNB(response);
+            else if (cmd == CMD_READ_NR) ParseNR(response);
+            else if (cmd == CMD_READ_BC) ParseBC(response);
             else if (cmd == CMD_READ_VFO1) ParseVfoA(response);
             else if (cmd == CMD_READ_VFO2) ParseVfoB(response);
             else if (cmd == CMD_READ_TUNER) ParseTuner(response);
