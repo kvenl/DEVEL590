@@ -326,7 +326,7 @@ namespace The590Box
             pwrControlTrackBar.TickStyle = TickStyle.Both;
             pwrControlTrackBar.Value = 100;
             // 
-            // textBox3
+            // POWERTextBox
             // 
             POWERTextBox.BackColor = Color.Black;
             POWERTextBox.BorderStyle = BorderStyle.None;
@@ -531,7 +531,7 @@ namespace The590Box
             MENU.FlatAppearance.MouseOverBackColor = Color.Blue;
             MENU.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             MENU.ForeColor = Color.Yellow;
-            MENU.Location = new Point(520, 219);
+            MENU.Location = new Point(520, 147);
             MENU.Name = "MENU";
             MENU.Size = new Size(88, 22);
             MENU.TabIndex = 59;
@@ -604,7 +604,7 @@ namespace The590Box
             comPortComboBox.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             comPortComboBox.ForeColor = Color.Yellow;
             comPortComboBox.ItemHeight = 16;
-            comPortComboBox.Location = new Point(520, 169);
+            comPortComboBox.Location = new Point(520, 171);
             comPortComboBox.Name = "comPortComboBox";
             comPortComboBox.Size = new Size(88, 22);
             comPortComboBox.TabIndex = 64;
@@ -617,7 +617,7 @@ namespace The590Box
             connectButton.FlatAppearance.MouseOverBackColor = Color.Blue;
             connectButton.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             connectButton.ForeColor = Color.Yellow;
-            connectButton.Location = new Point(520, 145);
+            connectButton.Location = new Point(520, 217);
             connectButton.Name = "connectButton";
             connectButton.Size = new Size(88, 22);
             connectButton.TabIndex = 65;
@@ -693,7 +693,7 @@ namespace The590Box
             STEP_combobox.ForeColor = Color.Yellow;
             STEP_combobox.IntegralHeight = false;
             STEP_combobox.ItemHeight = 16;
-            STEP_combobox.Location = new Point(520, 194);
+            STEP_combobox.Location = new Point(520, 195);
             STEP_combobox.Name = "STEP_combobox";
             STEP_combobox.Size = new Size(88, 22);
             STEP_combobox.TabIndex = 71;
