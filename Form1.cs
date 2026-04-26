@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 // Code : Kees van Engelen (keesvanengelen@gmail.com)
 // 
-// Version : 1.7  (25 apr 26); 
+// Version : 1.8  (26 apr 26); 
 // Name    : The590Box 
 
 
@@ -19,7 +19,7 @@ namespace The590Box
 {
     public partial class MainForm : Form
     {
-        private const string AppTitle = "The590Box v 1.7 - by Kees, ON9KVE";
+        private const string AppTitle = "The590Box v 1.8 - by Kees, ON9KVE";
 
         #region Radio Commands — Kenwood TS-590SG
         private const string CMD_READ_MODE = "MD;";
@@ -145,10 +145,11 @@ namespace The590Box
         private bool internalTunerOn = false;
         // SWR blink state
         private readonly System.Windows.Forms.Timer swrBlinkTimer = new() { Interval = 300 };
-        private int    swrBlinkCount    = 0;
-        private string swrMuteText      = "";
-        private Color  swrMuteBackColor = Color.DarkGreen;
-        private Color  swrMuteForeColor = Color.Yellow;
+        private int    swrBlinkCount      = 0;
+        private string swrTunerText       = "";
+        private Color  swrTunerBackColor  = Color.DarkGreen;
+        private Color  swrTunerForeColor  = Color.Yellow;
+        private Font   swrTunerFont       = SystemFonts.DefaultFont;
         private int nbState = 0;
         private int nrState = 0;
         private int bcState = 0;
@@ -770,33 +771,83 @@ namespace The590Box
                 StartSwrBlink();
         }
 
+        /// <summary>Generates a pure sine-wave WAV at the given frequency/duration/amplitude
+        /// and plays it synchronously (call from a background thread).</summary>
+        private static void PlayTone(int frequencyHz, int durationMs, short amplitude)
+        {
+            const int sampleRate = 44100;
+            int sampleCount = sampleRate * durationMs / 1000;
+
+            using var ms = new System.IO.MemoryStream();
+            using var bw = new System.IO.BinaryWriter(ms);
+
+            // RIFF/WAVE header
+            bw.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"));
+            bw.Write(36 + sampleCount * 2);
+            bw.Write(System.Text.Encoding.ASCII.GetBytes("WAVE"));
+            // fmt chunk
+            bw.Write(System.Text.Encoding.ASCII.GetBytes("fmt "));
+            bw.Write(16);               // chunk size
+            bw.Write((short)1);         // PCM
+            bw.Write((short)1);         // mono
+            bw.Write(sampleRate);
+            bw.Write(sampleRate * 2);   // byte rate
+            bw.Write((short)2);         // block align
+            bw.Write((short)16);        // bits per sample
+            // data chunk
+            bw.Write(System.Text.Encoding.ASCII.GetBytes("data"));
+            bw.Write(sampleCount * 2);
+            for (int i = 0; i < sampleCount; i++)
+            {
+                double t = (double)i / sampleRate;
+                short sample = (short)(amplitude * Math.Sin(2 * Math.PI * frequencyHz * t));
+                bw.Write(sample);
+            }
+            ms.Position = 0;
+
+            using var player = new System.Media.SoundPlayer(ms);
+            player.PlaySync();
+        }
+
         private void StartSwrBlink()
         {
-            if (MUTE.InvokeRequired) { MUTE.BeginInvoke((Action)StartSwrBlink); return; }
+            if (IntTune.InvokeRequired) { IntTune.BeginInvoke((Action)StartSwrBlink); return; }
             if (swrBlinkTimer.Enabled) return;          // already blinking
-            swrMuteText      = MUTE.Text;
-            swrMuteBackColor = MUTE.BackColor;
-            swrMuteForeColor = MUTE.ForeColor;
-            swrBlinkCount    = 0;
+            swrTunerText      = IntTune.Text;
+            swrTunerBackColor = IntTune.BackColor;
+            swrTunerForeColor = IntTune.ForeColor;
+            swrTunerFont      = IntTune.Font;
+            swrBlinkCount     = 0;
             swrBlinkTimer.Start();
+            // 3 beeps at 1000 Hz, amplitude 32767, on background thread
+            Task.Run(() =>
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    PlayTone(1000, 300, 32767);
+                    Thread.Sleep(150);
+                }
+            });
         }
 
         private void SwrBlinkTimer_Tick(object sender, EventArgs e)
         {
             swrBlinkCount++;
-            if (swrBlinkCount > 10)                     // 10 half-cycles = 5 full blinks
+            if (swrBlinkCount > 6)                      // 6 half-cycles = 3 blinks
             {
                 swrBlinkTimer.Stop();
-                swrBlinkCount    = 0;
-                MUTE.Text        = swrMuteText;
-                MUTE.BackColor   = swrMuteBackColor;
-                MUTE.ForeColor   = swrMuteForeColor;
+                swrBlinkCount      = 0;
+                IntTune.Text       = swrTunerText;
+                IntTune.BackColor  = swrTunerBackColor;
+                IntTune.ForeColor  = swrTunerForeColor;
+                IntTune.Font       = swrTunerFont;
                 return;
             }
-            bool on = swrBlinkCount % 2 == 1;           // odd ticks = blink ON
-            MUTE.Text      = on ? "HI SWR"       : swrMuteText;
-            MUTE.BackColor = on ? Color.Yellow    : swrMuteBackColor;
-            MUTE.ForeColor = on ? Color.Red       : swrMuteForeColor;
+            // Alternate RED (odd ticks) and YELLOW (even ticks)
+            IntTune.BackColor = swrBlinkCount % 2 == 1 ? Color.Red    : Color.Yellow;
+            IntTune.Text      = "HI SWR";
+            IntTune.ForeColor = Color.Black;
+            IntTune.Font      = new Font(swrTunerFont.FontFamily, swrTunerFont.Size + 1f, FontStyle.Bold);
         }
         // ─────────────────────────────────────────────────────────────────────
 
