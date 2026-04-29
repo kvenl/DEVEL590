@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ using System.Windows.Forms;
 
 // Code : Kees van Engelen (keesvanengelen@gmail.com)
 // 
-// Version : 1.9  (26 apr 26); 
+// Version : 2.0  (29 apr 26); 
 // Name    : The590Box 
 
 
@@ -19,7 +20,7 @@ namespace The590Box
 {
     public partial class MainForm : Form
     {
-        private const string AppTitle = "The590Box v 1.9 - by Kees, ON9KVE";
+        private const string AppTitle = "The590Box v 2.0 - by Kees, ON9KVE";
 
         #region Radio Commands — Kenwood TS-590SG
         private const string CMD_READ_MODE = "MD;";
@@ -157,14 +158,34 @@ namespace The590Box
         private char currentModeChar = '0'; // last received mode character from MD;
         private int ex028 = 0;              // SSB filter menu: 0=normal(HLMode), 1=WSMode
         private int ex029 = 0;              // DIG filter menu: 0=normal(HLMode), 1=WSMode
+
+        // Proportional resize
+        private const int WM_SIZING   = 0x0214;
+        private const int WMSZ_LEFT   = 1, WMSZ_RIGHT      = 2;
+        private const int WMSZ_TOP    = 3, WMSZ_TOPLEFT    = 4, WMSZ_TOPRIGHT  = 5;
+        private const int WMSZ_BOTTOM = 6, WMSZ_BOTTOMLEFT = 7, WMSZ_BOTTOMRIGHT = 8;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct RECT { public int Left, Top, Right, Bottom; }
+
+        private Size _designClientSize;
+        private Size _designFormSize;
+        private readonly Dictionary<Control, Rectangle> _originalBounds    = new();
+        private readonly Dictionary<Control, float>     _originalFontSizes = new();
         public MainForm()
         {
             InitializeComponent();
             this.Text = $"{AppTitle} - Disconnected";
             InitializeTrackBarEvents();
 
-            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.FormBorderStyle = FormBorderStyle.Sizable;
             this.MaximizeBox = false;
+
+            // Capture design-time sizes for proportional scaling
+            _designClientSize = this.ClientSize;
+            _designFormSize   = this.Size;
+            StoreOriginalBounds(this);
+            this.Resize += MainForm_Resize;
 
             RestoreWindowPosition();
 
@@ -676,9 +697,17 @@ namespace The590Box
         private void UpdateABBButton()
         {
             ABB.Text = vfoB ? "VFO-B" : "VFO-A";
-            ABB.BackColor = vfoB ? Color.DarkBlue : Color.DarkGreen;
-            MINB.BackColor = vfoB ? Color.DarkBlue : Color.DarkGreen;
-            PLUSB.BackColor = vfoB ? Color.DarkBlue : Color.DarkGreen;
+            ABB.BackColor   = vfoB ? Color.DarkBlue  : Color.DarkGreen;
+            MINB.BackColor  = vfoB ? Color.DarkBlue  : Color.DarkGreen;
+            PLUSB.BackColor = vfoB ? Color.DarkBlue  : Color.DarkGreen;
+            VFOA_box.BackColor   = vfoB ? Color.Black   : Color.DarkGreen;
+            VFOA_box.ForeColor   = vfoB ? Color.DarkGray : Color.Yellow;
+            VFOB_box.BackColor   = vfoB ? Color.DarkBlue : Color.Black;
+            VFOB_box.ForeColor   = vfoB ? Color.Yellow   : Color.DarkGray;
+            vfoALabel.BackColor  = vfoB ? Color.Black   : Color.DarkGreen;
+            vfoALabel.ForeColor  = vfoB ? Color.DarkGray : Color.Yellow;
+            vfoBLabel.BackColor  = vfoB ? Color.DarkBlue : Color.Black;
+            vfoBLabel.ForeColor  = vfoB ? Color.Yellow   : Color.DarkGray;
             UpdateBandButton();
         }
         #endregion
@@ -1377,8 +1406,10 @@ namespace The590Box
         // Add this method to save window position
         private void SaveWindowPosition()
         {
-            UserConfig.Default.WindowLeft = this.Left;
-            UserConfig.Default.WindowTop = this.Top;
+            UserConfig.Default.WindowLeft      = this.Left;
+            UserConfig.Default.WindowTop       = this.Top;
+            UserConfig.Default.WindowWidth     = this.Width;
+            UserConfig.Default.WindowHeight    = this.Height;
             UserConfig.Default.IsPositionSaved = true;
             UserConfig.Default.Save();
         }
@@ -1391,23 +1422,94 @@ namespace The590Box
                 return;
             }
 
-            var savedBounds = new Rectangle(UserConfig.Default.WindowLeft, UserConfig.Default.WindowTop, this.Width, this.Height);
-            bool isVisible = Screen.AllScreens.Any(screen => screen.WorkingArea.IntersectsWith(savedBounds));
+            int w = UserConfig.Default.WindowWidth;
+            int h = UserConfig.Default.WindowHeight;
+            bool hasSavedSize = w > 0 && h > 0;
 
-            if (isVisible)
+            if (hasSavedSize)
             {
-                this.StartPosition = FormStartPosition.Manual;
-                this.Location = new Point(UserConfig.Default.WindowLeft, UserConfig.Default.WindowTop);
+                var savedBounds = new Rectangle(
+                    UserConfig.Default.WindowLeft, UserConfig.Default.WindowTop, w, h);
+                bool isVisible = Screen.AllScreens.Any(s => s.WorkingArea.IntersectsWith(savedBounds));
+                if (isVisible)
+                {
+                    this.StartPosition = FormStartPosition.Manual;
+                    this.Location = new Point(UserConfig.Default.WindowLeft, UserConfig.Default.WindowTop);
+                    this.Size     = new Size(w, h);
+                    return;
+                }
             }
             else
             {
-                this.StartPosition = FormStartPosition.CenterScreen;
+                var savedBounds = new Rectangle(
+                    UserConfig.Default.WindowLeft, UserConfig.Default.WindowTop, this.Width, this.Height);
+                bool isVisible = Screen.AllScreens.Any(s => s.WorkingArea.IntersectsWith(savedBounds));
+                if (isVisible)
+                {
+                    this.StartPosition = FormStartPosition.Manual;
+                    this.Location = new Point(UserConfig.Default.WindowLeft, UserConfig.Default.WindowTop);
+                    return;
+                }
             }
+
+            this.StartPosition = FormStartPosition.CenterScreen;
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            this.MinimumSize = _designFormSize;
+        }
 
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == WM_SIZING && !_designFormSize.IsEmpty)
+            {
+                var rc    = Marshal.PtrToStructure<RECT>(m.LParam);
+                float ratio = (float)_designFormSize.Width / _designFormSize.Height;
+                int w     = rc.Right - rc.Left;
+                int h     = (int)Math.Round(w / ratio);
+                int edge  = m.WParam.ToInt32();
+                if (edge == WMSZ_TOP || edge == WMSZ_TOPLEFT || edge == WMSZ_TOPRIGHT)
+                    rc.Top = rc.Bottom - h;
+                else
+                    rc.Bottom = rc.Top + h;
+                Marshal.StructureToPtr(rc, m.LParam, false);
+            }
+            base.WndProc(ref m);
+        }
+
+        private void MainForm_Resize(object sender, EventArgs e)
+        {
+            if (_designClientSize.IsEmpty || _originalBounds.Count == 0) return;
+            float s = (float)ClientSize.Width / _designClientSize.Width;
+            ApplyScale(this, s);
+        }
+
+        private void StoreOriginalBounds(Control parent)
+        {
+            foreach (Control c in parent.Controls)
+            {
+                _originalBounds[c]    = c.Bounds;
+                _originalFontSizes[c] = c.Font.Size;
+                if (c.HasChildren) StoreOriginalBounds(c);
+            }
+        }
+
+        private void ApplyScale(Control parent, float s)
+        {
+            foreach (Control c in parent.Controls)
+            {
+                if (!_originalBounds.TryGetValue(c, out var ob)) continue;
+                c.Bounds = new Rectangle(
+                    (int)Math.Round(ob.X * s),
+                    (int)Math.Round(ob.Y * s),
+                    (int)Math.Round(ob.Width  * s),
+                    (int)Math.Round(ob.Height * s));
+                if (_originalFontSizes.TryGetValue(c, out float fs))
+                    c.Font = new Font(c.Font.FontFamily, Math.Max(1f, fs * s),
+                                      c.Font.Style, GraphicsUnit.Point);
+                if (c.HasChildren) ApplyScale(c, s);
+            }
         }
 
         private void pwrControlLabel_Click(object sender, EventArgs e)

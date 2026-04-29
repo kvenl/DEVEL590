@@ -604,7 +604,7 @@ namespace The590Box
             comPortComboBox.Font = new Font("Verdana", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             comPortComboBox.ForeColor = Color.Yellow;
             comPortComboBox.ItemHeight = 16;
-            comPortComboBox.Location = new Point(520, 171);
+            comPortComboBox.Location = new Point(520, 195);
             comPortComboBox.Name = "comPortComboBox";
             comPortComboBox.Size = new Size(88, 22);
             comPortComboBox.TabIndex = 64;
@@ -693,7 +693,7 @@ namespace The590Box
             STEP_combobox.ForeColor = Color.Yellow;
             STEP_combobox.IntegralHeight = false;
             STEP_combobox.ItemHeight = 16;
-            STEP_combobox.Location = new Point(520, 195);
+            STEP_combobox.Location = new Point(520, 171);
             STEP_combobox.Name = "STEP_combobox";
             STEP_combobox.Size = new Size(88, 22);
             STEP_combobox.TabIndex = 71;
@@ -983,7 +983,7 @@ namespace The590Box
             Controls.Add(POWERTextBox);
             Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             ForeColor = Color.Yellow;
-            FormBorderStyle = FormBorderStyle.FixedSingle;
+            FormBorderStyle = FormBorderStyle.Sizable;
             ImeMode = ImeMode.Disable;
             Location = new Point(1, 1);
             Margin = new Padding(3, 4, 3, 4);

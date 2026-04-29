@@ -17,6 +17,8 @@ namespace The590Box
         public string LastPort        { get; set; } = "";
         public int    WindowLeft      { get; set; } = -1;
         public int    WindowTop       { get; set; } = -1;
+        public int    WindowWidth     { get; set; } = -1;
+        public int    WindowHeight    { get; set; } = -1;
         public bool   IsPositionSaved { get; set; } = false;
         public int    StepIndexA      { get; set; } = 2;
         public int    StepIndexB      { get; set; } = 2;
